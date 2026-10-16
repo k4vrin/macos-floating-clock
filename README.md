@@ -1,91 +1,96 @@
----
-type: project-hub
-status: prototype
-created: 2026-10-15
-language: en
----
+# Wavy Clock
 
-# macOS Floating Clock
+![macOS 13 or later](https://img.shields.io/badge/macOS-13%2B-111111?logo=apple&logoColor=white)
+![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+![AppKit](https://img.shields.io/badge/UI-AppKit-356AC3)
+![Prototype](https://img.shields.io/badge/status-prototype-D69B42)
 
-## First clock prototype
+A native macOS notch bar for expressive clocks, a calendar, and AI subscription usage. Built with Swift and AppKit, with no package dependencies.
 
-Implemented 2026-10-16. The first native AppKit face, **The Wavy One**, adapts the cream/red reference with raised hour markers and wavy hands. A menu-bar-height horizontal analog clock, shaped after REF-03 and styled like the main face, expands into the clock/date panel with animated resizing and reduced-motion support. Click either compact wing to expand, click Collapse to close, or use the clock menu-bar icon for Expand/Collapse, Show/Hide, and Quit.
+Wavy Clock starts with the visual details: sculpted clock faces, playful hands, warm colors, and compact objects that open into a larger desk of widgets. Rich components and animation are the main reason this project exists.
 
-Build and run from the repository root:
+## Current look
+
+The compact bar places a clock on the left of the notch and a companion widget on the right. Its height follows the selected display's menu-bar geometry.
+
+![Compact Wavy digital clock with calendar](docs/screenshots/compact-wavy-calendar.png)
+
+Click either wing to open the expanded panel.
+
+![Expanded Wavy digital clock and calendar](docs/screenshots/expanded-wavy-calendar.png)
+
+These are screenshots of the running AppKit app on a 14-inch MacBook Pro, using the Blue Digital clock, a calendar, and the Plum & brass palette. They include the custom Wavy numerals from [PR #2](https://github.com/k4vrin/macos-floating-clock/pull/2). The default `main` branch currently has the counter-style digital clock; the Wavy family and custom numerals are in the [open PR stack](https://github.com/k4vrin/macos-floating-clock/pulls). Screenshots show the app window itself, so the physical camera notch is not included.
+
+## What works
+
+- Analog and digital clocks with compact and expanded layouts.
+- An independently selected calendar or Codex/Claude usage widget on the right.
+- Installable JSON packs for clock designs, widgets, and color palettes.
+- A monitor selector, saved selections, 12/24-hour time, reduced animation, and start-expanded settings.
+- Display-aware menu-bar sizing and positioning, including notch exclusion.
+- Refresh scheduling that changes with compact/expanded state and app lifecycle.
+
+The next visual work is to bring calendar and usage components into the same Wavy family and add a continuous hover-driven morph between compact and expanded views. The current transition uses click-to-expand with animated resizing.
+
+## Build and run
+
+You need macOS 13 or later and an Xcode toolchain with Swift 6 and the macOS SDK.
 
 ```sh
+git clone https://github.com/k4vrin/macos-floating-clock.git
+cd macos-floating-clock
 zsh scripts/build-app.sh
 open 'build/Wavy Clock.app'
+```
+
+The script builds the release executable with SwiftPM, packages it as an app, and applies an ad-hoc signature. This is a local development build; there is no notarized installer yet. Open `Package.swift` in Xcode to work on the project.
+
+To try the Wavy numeral preview shown above before it merges:
+
+```sh
+git switch --track origin/feature/notchbar-wavy-numerals
+zsh scripts/build-app.sh
+open 'build/Wavy Clock.app'
+```
+
+Quit a running copy before rebuilding. In Settings, choose a digital clock and the Wavy visual family.
+
+Run the tests with:
+
+```sh
 swift test
 ```
 
-The build uses SwiftPM with Swift 6 language mode and the installed Xcode toolchain, then packages and ad-hoc signs a local `.app`. It is a development prototype, not a notarized distribution. Open `Package.swift` in Xcode to inspect the sources.
+## Customize the bar
 
-See [First clock verification](docs/FIRST_CLOCK.md) for actual checks, resource measurements, limitations, and screenshot locations. Earlier planning documents remain proposals where not explicitly implemented. Analog and digital clocks, reusable date/AI widgets, pack installation, and saved selections are implemented. Claude needs its status-line connection configured. Launch at login and general settings remain planned.
+Right-click either compact wing and open **Settings…** to select a monitor, clock, companion widget, and palette. Use **Install Theme or Clock Pack…** to import a declarative pack.
 
-## Primary product goal, 2026-10-16
+Try the included examples:
 
-The owner is creating this project primarily for its aesthetics, rich UI components, and animations. A visually distinctive result is a central product goal. Treat clock faces, materials, depth, expressive details, and compact-to-expanded motion as core design work, with readability and accessibility built into that work. See [the visual direction](docs/INSPIRATION.md) for the reference gallery and latest intent.
+- [Blue Hour](examples/blue-hour.clockpack.json), additional analog and digital designs.
+- [Desk Widgets](examples/desk-widgets.clockpack.json), calendar and usage designs.
+- [Tide Pool](examples/tide-pool.clockpack.json), a palette-only pack.
 
-A native macOS clock utility, now directed toward a compact notch bar with expandable clock designs and possible companion content.
+Packs configure the app's built-in renderers. They do not load executable third-party code. The Wavy/Counter visual-family selector is currently part of the open PR stack.
 
-This repository contains project documentation, reference images, and the first AppKit clock prototype. The working name is provisional.
+## Usage connections
 
-## Latest direction, 2026-10-15
+The usage widget can show Codex subscription limits through the local Codex connection. Claude requires its status-line connection to be configured. An unavailable or disconnected provider is shown explicitly. See [provider setup and limitations](docs/RIGHT_SIDE_WIDGETS.md).
 
-See [Clock inspiration and notch bar direction](docs/INSPIRATION.md) for all seven saved reference images and the owner's updated concept. Compact mode extends on both sides of the notch, exactly matches the macOS menu-bar height, and does not extend below the notch. Expanded mode reveals switchable expressive clock designs. Date and AI subscription usage widgets now occupy the independently selectable right-hand slot.
+## Project notes
 
-This replaces the earlier text-only floating-clock direction. The initial documents below are retained as a planning baseline, with notices where they need revision. Use the implemented clock-pack and right-side-widget documents for the current contracts.
+This is an early prototype. The reference machine is a 14-inch MacBook Pro with M1 Pro. Geometry tests cover notched and non-notched inputs, but the app has not been verified on every Mac, macOS version, display arrangement, or full-screen configuration. Launch at login and a signed, notarized release are still pending.
 
-## Current prototype boundary
+| Guide | Contents |
+| --- | --- |
+| [Roadmap](docs/ROADMAP.md) | Milestones and acceptance criteria |
+| [First clock verification](docs/FIRST_CLOCK.md) | Recorded checks and resource measurements |
+| [Compact geometry](docs/COMPACT_GEOMETRY.md) | Menu-bar sizing and display placement |
+| [Clock packs](docs/CLOCK_PACKS.md) | Pack architecture and JSON format |
+| [Theme plugins](docs/THEME_PLUGINS.md) | Palette installation and selection |
+| [Settings](docs/SETTINGS.md) | Preferences and defaults |
+| [Architecture](docs/ARCHITECTURE.md) | AppKit components and lifecycle |
+| [Testing](docs/TESTING.md) | Compatibility and performance checks |
+| [Visual inspiration](docs/INSPIRATION.md) | Physical clock references and design direction |
 
-The prototype uses Swift and AppKit for one notch panel, analog and digital clock designs, independently selected right-side date/AI widgets, installable declarative packs, and lifecycle-aware refresh. Full settings, movable floating placement, launch at login, media controls, weather, cloud sync, and executable third-party plugins remain outside the implemented scope.
-
-The reference device is a 14-inch MacBook Pro with M1 Pro and a display notch. Proposed deployment baseline is macOS 13 or later, subject to the owner's installed OS and the compatibility matrix. An API being available does not mean that every OS version has been tested.
-
-## Documents
-
-| Document | Read it for |
-|---|---|
-| [Inspiration and latest direction](docs/INSPIRATION.md) | Seven image references, compact/expanded states, companion ideas |
-| [PRD](docs/PRD.md) | User need, release scope, success criteria |
-| [Requirements](docs/REQUIREMENTS.md) | Stable requirement IDs and acceptance criteria |
-| [Architecture](docs/ARCHITECTURE.md) | Components, ownership, lifecycle, platform constraints |
-| [UI and UX](docs/UI_UX.md) | Design alternatives, recommended direction, interactions |
-| [Window management](docs/WINDOW_MANAGEMENT.md) | Focus, placement, monitors, Spaces, full-screen limits |
-| [Time engine](docs/TIME_ENGINE.md) | Wall time, formatting, scheduling, recovery |
-| [Settings](docs/SETTINGS.md) | Defaults, validation, persistence, login integration |
-| [Roadmap](docs/ROADMAP.md) | Incremental milestones and exit conditions |
-| [Testing](docs/TESTING.md) | Verification matrix and measurement procedures |
-| [Decisions](docs/DECISIONS.md) | Required constraints and proposed ADRs |
-| [Open questions](docs/OPEN_QUESTIONS.md) | Discussion points and implementation blockers |
-
-## Original technical starting point, pending revision
-
-Use an accessory AppKit application with a borderless, nonactivating `NSPanel`, a custom `NSView` containing native text fields, and a persistent `NSStatusItem`. Keep AppKit operations on the main thread. A single clock engine reads current system time at each scheduled boundary; a settings store uses `UserDefaults`.
-
-The largest risk is focus and window visibility across full-screen Spaces and Stage Manager. First validate a small window-behavior experiment on the reference Mac before building customization. Ordinary-window floating behavior is required. Full-screen behavior needs recorded evidence and must not be advertised as universal.
-
-Launch at login, optional seconds, and optional date are proposed release requirements, delivered after the core clock milestone. That original notch deferral is superseded by the latest direction; its geometry and interactions need a new feasibility pass.
-
-## Future development setup
-
-When implementation is authorized, create a separate source repository outside this vault. Use Xcode with a macOS SDK supporting the proposed macOS 13 deployment target, Swift, an AppKit app target, and XCTest targets. Remove any template SwiftUI entry point and use `NSApplicationDelegate`. Keep the exact Xcode and Swift versions in that repository's README after testing them. No package dependencies are proposed.
-
-Local build artifacts and signing material belong outside the vault. Choose the bundle identifier, source location, signing identity, and distribution channel before release work. Repository setup does not start implementation or change the learning backlog.
-
-## Evidence and status
-
-Technical research was checked against Apple documentation and selected installed Xcode SDK declarations on 2026-10-15. References appear beside the relevant recommendations. SDK declarations confirm availability, not runtime behavior. All performance numbers are proposed targets. See [Testing](docs/TESTING.md) for how evidence must be recorded.
-
-## Digital clock and installable sets
-
-The Originals set now includes analog and digital designs. Use the status menu **Clocks** to switch. **Install Clock Pack…** imports an additional set from JSON. See [Clock pack architecture and format](docs/CLOCK_PACKS.md) and the [Blue Hour example](examples/blue-hour.clockpack.json).
-
-## Right-side widgets
-
-Select a flip calendar or Codex/Claude usage desk from **Right-side Widgets**. Each supports compact and expanded views and can be included in an installed pack. [Architecture, provider connections, and limitations](docs/RIGHT_SIDE_WIDGETS.md).
-
-### Settings and theme plugins
-
-Right-click the compact clock and open **Settings…** to choose a monitor, clock, right-side widget, and theme. The app now prefers the built-in display and measures its menu-bar band automatically. Settings also includes 12/24-hour time, reduced animations, and start-expanded behavior. See [Settings](docs/SETTINGS.md) and [Theme plugins](docs/THEME_PLUGINS.md); [Tide Pool](examples/tide-pool.clockpack.json) is an installable theme-only example.
+The product name is provisional. Some early planning documents describe future behavior; the implemented features and limits above describe the current app.
