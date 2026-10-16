@@ -12,6 +12,7 @@ struct ThemeDesign: Codable, Equatable, Sendable {
     let clockAccent: String
     let widgetAccent: String
     var usesDesignAccents: Bool? = nil
+    var family: VisualFamily? = nil
 
     static let originals = [
         ThemeDesign(id: "original", name: "Original objects", shell: "0E0F0E", surface: "F0E6C4", ink: "1F211F",

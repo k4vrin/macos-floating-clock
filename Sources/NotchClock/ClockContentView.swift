@@ -9,6 +9,13 @@ final class FlippedContainerView: NSView {
 final class ClockContentView: NSView {
     private var palette = ThemePalette()
     var uses24HourTime = true { didSet { configureFormatters() } }
+    var visualFamily = VisualFamily.wavy {
+        didSet {
+            for view in [face, compactClock, compactWidget, expandedWidget] {
+                view.visualFamily = visualFamily
+            }
+        }
+    }
     var reduceMotion = false
     var packName = "Originals" { didSet { needsDisplay = true } }
     private var design = ClockPack.builtIn.clocks[0]
@@ -103,6 +110,7 @@ final class ClockContentView: NSView {
     func applyTheme(_ theme: ThemeDesign) {
         palette = ThemePalette(theme)
         for view in [face, compactClock, compactWidget, expandedWidget] {
+            view.visualFamily = visualFamily
             view.palette = palette
             view.uses24HourTime = uses24HourTime
         }

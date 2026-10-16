@@ -296,6 +296,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func applyPreferences() {
         content.uses24HourTime = preferences.uses24HourTime
         content.reduceMotion = preferences.reduceMotion
+        content.visualFamily = preferences.visualFamily
         let selected = packs.flatMap { pack in (pack.themes ?? []).map { (pack.id + "/" + $0.id, $0) } }
             .first { $0.0 == preferences.theme }?.1 ?? ThemeDesign.originals[0]
         content.applyTheme(selected)

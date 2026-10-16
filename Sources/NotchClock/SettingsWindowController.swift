@@ -40,6 +40,7 @@ final class SettingsWindowController: NSWindowController {
     private let clock = NSPopUpButton()
     private let widget = NSPopUpButton()
     private let theme = NSPopUpButton()
+    private let family = NSPopUpButton()
     private let timeFormat = NSButton(checkboxWithTitle: "Use 24-hour time", target: nil, action: nil)
     private let motion = NSButton(checkboxWithTitle: "Reduce animations", target: nil, action: nil)
     private let startup = NSButton(checkboxWithTitle: "Start expanded", target: nil, action: nil)
@@ -47,7 +48,7 @@ final class SettingsWindowController: NSWindowController {
     private let sample = ThemeSampleView()
 
     init() {
-        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 570, height: 560),
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 570, height: 600),
                               styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
         window.title = "Wavy Clock Settings"
         window.isReleasedWhenClosed = false
@@ -73,7 +74,7 @@ final class SettingsWindowController: NSWindowController {
         stack.addArrangedSubview(sample)
         sample.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         for (index, label, popup) in [(0, "Display", display), (1, "Clock", clock),
-                                      (2, "Right side", widget), (3, "Theme", theme)] {
+                                      (2, "Right side", widget), (4, "Visual family", family), (3, "Palette", theme)] {
             popup.tag = index
             popup.target = self
             popup.action = #selector(choiceChanged(_:))
@@ -120,6 +121,7 @@ final class SettingsWindowController: NSWindowController {
         populate(display, choices: displays, selected: preferences.display)
         populate(clock, choices: clocks, selected: selectedClock)
         populate(widget, choices: widgets, selected: selectedWidget)
+        populate(family, choices: VisualFamily.allCases.map { SettingsChoice(id: $0.rawValue, title: $0.title) }, selected: preferences.visualFamily.rawValue)
         populate(theme, choices: themes.map(\.0), selected: preferences.theme)
         sample.theme = self.themes[preferences.theme] ?? ThemeDesign.originals[0]
         diagnostics.stringValue = geometryDescription
@@ -149,9 +151,14 @@ final class SettingsWindowController: NSWindowController {
         case 0: preferences.display = key; onPreferencesChanged?(preferences)
         case 1: onClockChanged?(key)
         case 2: onWidgetChanged?(key)
-        default:
+        case 3:
             preferences.theme = key
+            if let recommendation = themes[key]?.family { preferences.visualFamily = recommendation }
             sample.theme = themes[key] ?? ThemeDesign.originals[0]
+            onPreferencesChanged?(preferences)
+        default:
+            guard let family = VisualFamily(rawValue: key) else { return }
+            preferences.visualFamily = family
             onPreferencesChanged?(preferences)
         }
     }
