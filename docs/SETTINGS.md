@@ -1,44 +1,30 @@
 # Settings and persistence
 
-> Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
+Implemented in the AppKit prototype on 2026-10-16. Open **Settings…** from the status-item menu or by right-clicking either compact component. Changes apply immediately and are stored in the app's `UserDefaults` domain.
 
-Status: proposed defaults. Covers FR-006 to FR-008 and FR-013. Appearance specifications are in [UI and UX](UI_UX.md).
-
-## Configuration contract
-
-| Setting | Default | Validation and behavior |
+| Control | Default | Behavior |
 |---|---|---|
-| Hour format | 24-hour | Enum with 12-hour and 24-hour choices. Invalid stored value restores 24-hour. |
-| Show seconds | Off | Boolean. Immediately changes scheduling cadence and reserved text width. |
-| Show date | Off | Boolean. Adds one localized short-date line. |
-| Font | System, medium weight, monospaced digits | Persist system choice or installed font PostScript name. Missing font falls back to system. Do not assume custom fonts support monospaced digits. |
-| Preferred text size | 48 points | Finite value from 20 to 160 points. Clamp finite out-of-range values; reject NaN/infinity. Effective size may shrink to fit a small display. |
-| Text opacity | 1.0 | Finite value from 0.3 to 1.0. Apply to text content, not the settings window or menu. |
-| Text color mode | Automatic | Automatic, light, dark. Automatic follows system appearance; it cannot inspect wallpaper or promise contrast against every window. |
-| Position | Top-right, 16-point margin | Display hint and normalized offsets, validated and clamped by ScreenPlacement. See Window management. |
-| Launch at login | Off | Actual OS registration status is authoritative, not a stored Boolean. |
-| Clock visibility | Shown on launch | Session-only state; Hide does not cause an invisible restart. |
+| Display | Built-in display preferred | Choose the laptop, follow the active display, or select a connected monitor by name. Specific monitors are stored by Core Graphics display UUID. A disconnected choice falls back to the built-in display, then the first available screen; its saved UUID remains unchanged so reconnection restores placement. |
+| Clock | The Wavy One | All installed clock designs appear here. |
+| Right side | The Daily One | Choose the date card, AI usage, or an installed widget. Existing selection persists across upgrades. |
+| Theme | Original objects | Three bundled palettes, plus installed theme plugins. Changes affect the shell, analog and digital clocks, date card, and usage widget. Original objects preserves each design's accent. |
+| Use 24-hour time | On | Updates the expanded time label, digital faces, and clock accessibility labels. Analog hands retain the same instant. Twelve-hour digital tiles show four digits; the expanded label identifies AM/PM. |
+| Reduce animations | Off | Removes expansion/collapse motion. The macOS Reduce Motion preference always takes precedence. |
+| Start expanded | Off | Starts with the expanded clock on the next normal launch. Closing Settings leaves the app running. |
+| Install theme or clock pack | Action | Imports a validated local JSON manifest through the existing pack store. Select the installed theme or component after installation. |
 
-Only these controls belong in the first release. Theme packs, custom color editors, custom date patterns, global shortcuts, click-through mode, and per-display instances require separate scope decisions.
+The display diagnostic shows the screen actually chosen, its resolved compact height, and the notch gap. On the connected 14-inch MacBook Pro, native APIs report a 32-point menu band and a 185-point cutout gap at the current scaling. The external G27F reports no top reservation and uses the 22-point fallback. Monitor selection now controls which geometry is used rather than inheriting the screen on which the app happened to launch.
 
-## Persistence design
+## Implementation
 
-Use a namespaced, versioned settings representation in `UserDefaults`, initially schema version 1. Keep serialization in the store rather than controllers. Use explicit defaults and validate each field independently so one corrupt value does not discard valid preferences.
+- `AppPreferences.swift` owns settings persistence and monitor selection/fallback. Display selection is independent of `panel.screen`, so a selected display remains authoritative across geometry notifications.
+- `SettingsWindowController.swift` owns the native controls and palette preview. It calls narrow callbacks on the app delegate rather than repositioning windows or reading provider credentials itself.
+- `ThemeDesign.swift` defines validated theme data and per-view AppKit palettes. There is no shared mutable global theme and no added timer.
+- `AppDelegate` applies settings, captures the selected display's native geometry, updates the existing clock views, and refreshes the controls after display or pack changes.
+- `MenuBarGeometry.swift` retains responsibility for measured heights, cutout bounds, auto-hide fallbacks, and top-anchored frames. See [Compact geometry](COMPACT_GEOMETRY.md).
 
-Apply changes in memory immediately. Coalesce rapid slider changes and save after roughly 300 ms of inactivity; persist drag position on mouse-up. Finish pending saves before ordinary termination. UserDefaults is not a transactional database or secure secret store. A forced kill may lose the final pending edit, which must not corrupt subsequent startup.
+Theme plugins use the same local pack directory as clocks and widgets. See [Theme plugins](THEME_PLUGINS.md) for the manifest and example. A missing theme uses Original objects until its manifest becomes available again; its saved key is retained. Invalid or duplicate imported packs are rejected without replacing existing files.
 
-Reject unsupported future schema versions without overwriting the saved representation. Run with safe defaults and show a non-blocking explanation in Settings. Add migrations only when a schema changes; preserve fixtures for older schemas. Do not call `synchronize()` repeatedly or write on clock ticks.
+## Scope and remaining checks
 
-Reset Appearance restores format and visual controls. Reset Position changes placement only. Neither action changes login registration. There is no blanket Reset All action in the initial design, avoiding an ambiguous interaction with OS-controlled login state.
-
-## Login integration
-
-Use `SMAppService.mainApp` after a deliberate toggle. Query status when Settings opens and after registration/unregistration completes. Distinguish enabled, not registered, approval required, and service unavailable/not found. Catch errors, display an actionable message, and leave the control consistent with actual status.
-
-When approval is required, offer Apple's Login Items settings entry point. Do not retry registration on every launch or force a disabled setting back on. A checkbox showing the user's intent is insufficient if OS approval remains pending. Test changes made externally in System Settings.
-
-Validate from a stable, installed app bundle with the intended signing configuration. Xcode-run behavior alone is not release evidence. No separate launch daemon, privileged helper, or custom LaunchAgent is proposed.
-
-## References
-
-Checked 2026-10-15: [SMAppService](https://developer.apple.com/documentation/servicemanagement/smappservice), [register](https://developer.apple.com/documentation/servicemanagement/smappservice/register()), [deprecated SMLoginItemSetEnabled](https://developer.apple.com/documentation/servicemanagement/smloginitemsetenabled(_:_:)). Apple documents the modern service APIs for macOS 13 onward. This design does not use the deprecated helper registration API.
+This settings window does not implement launch-at-login registration, arbitrary fonts, a manual compact-height override, or multiple simultaneous clock panels. Previous floating-clock settings proposals are superseded by the implemented controls above. Older macOS versions and physical monitor disconnect/reconnect remain manual hardware checks; fallback/selection behavior is covered by deterministic tests.

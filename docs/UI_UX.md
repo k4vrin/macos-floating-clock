@@ -1,5 +1,21 @@
 # UI and UX
 
+## Current visual and motion direction, 2026-10-16
+
+The owner is creating this project primarily for its aesthetics, rich UI components, and animations. A visually distinctive result is a central product goal. Treat clock faces, materials, depth, expressive details, and compact-to-expanded motion as core design work, with readability and accessibility built into that work.
+
+Design compact and expanded states together. Prototype the expansion/collapse choreography, switching between clock faces, and feedback for interactive components before treating the visual design as complete. A working plain-text clock alone does not satisfy the intended outcome. Start with one polished face and its transitions, then extend the visual family.
+
+Proposed review criteria:
+
+- The first face has a deliberate silhouette, palette, typography or hand design, and treatment of depth/material, informed by the saved references.
+- Expansion, collapse, and clock switching have specified start/end states and can be interrupted or reversed without jumps, clipped content, or focus theft.
+- Compact resting geometry still matches menu-bar height and stays above the notch lower edge. Transition geometry must be designed explicitly.
+- Reduce Motion provides an equally usable reduced-motion treatment, and VoiceOver can read time without depending on the animated graphics.
+- Evaluate frame pacing and energy during motion separately from idle clock cost. No specific animation duration or refresh-rate target is accepted yet.
+
+The older alternatives and floating-clock dimensions below are historical planning notes pending the notch redesign.
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Status: proposed direction for discussion. No visual mockup or rendered app has been created.
@@ -14,7 +30,7 @@ Status: proposed direction for discussion. No visual mockup or rendered app has 
 | Compact pill | Clear bounds and easier dragging, useful on busy wallpapers | Low to medium, rounded solid/translucent background | Modest static compositing; avoid heavy shadows | Candidate after initial usability feedback |
 | Large typography clock | Readable at distance, occupies substantial working area | Low, but long locale strings and fit limits need care | Larger dirty area; still update only on changed content | Supported through size setting, no separate mode |
 
-The proposed MVP has one text-only direction. Avoid shipping several unfinished themes. If wallpaper readability is inadequate in user trials, evaluate the compact pill before adding blur.
+The earlier text-only MVP recommendation is superseded. Develop a distinctive clock face and motion treatment first, then add further faces without diluting their visual quality.
 
 ## Layout specification
 
@@ -22,7 +38,7 @@ Use 48-point system medium text with monospaced digits by default. Support 20 to
 
 Use 12 points of horizontal hit-area padding and 8 points vertically. Date text is 45% of the effective time size, with a 12-point minimum, separated by 4 points. Measure actual strings rather than hard-coding a panel width. For long date strings, grow within the usable screen and then fit without silently truncating the date. Settings controls show both preferred size and any temporary fit reduction.
 
-There is no title bar, blinking separator, automatic movement, decorative transition, or hover animation. Text ticks change in place. Native Settings controls use Auto Layout and accommodate longer localized labels.
+The earlier blanket exclusion of decorative transitions and hover animation is superseded. Choose motion intentionally for expansion, face changes, and component interaction. Native Settings controls can still use Auto Layout and accommodate longer localized labels.
 
 Automatic color follows macOS appearance, not the background behind the overlay. Light and dark text modes provide manual recovery. Opacity below 1.0 is user-selected and may reduce readability. Do not describe automatic mode as universal contrast adaptation.
 
@@ -48,6 +64,6 @@ Use native text elements or expose equivalent readable clock/date semantics from
 
 VoiceOver should read the current time on demand. Do not post a spoken announcement every second or minute. Test the nonactivating panel's discoverability with VoiceOver; if the overlay cannot be reached reliably, provide a current-time readout in Settings. This is a functional fallback to test, not evidence already obtained.
 
-Respect Reduce Motion and increased-contrast preferences. The initial design has no decorative motion. If a material direction is later adopted, honor Reduce Transparency with a solid alternative. Do not rely solely on color for login status or validation errors.
+Respect Reduce Motion and increased-contrast preferences. Provide a reduced-motion alternative for the planned animations. If a material direction is later adopted, honor Reduce Transparency with a solid alternative. Do not rely solely on color for login status or validation errors.
 
 Acceptance belongs to FR-006/FR-007 and NFR-007/NFR-008. Test real VoiceOver navigation rather than checking labels in code alone.

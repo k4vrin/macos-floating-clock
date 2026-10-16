@@ -1,5 +1,21 @@
 # Requirements and acceptance criteria
 
+> Implemented addition, 2026-10-16: [Right-side widgets](RIGHT_SIDE_WIDGETS.md) documents reusable calendar and AI usage items, independent slot selection, Codex app-server refresh, and the Claude status-line bridge.
+
+
+> Implemented update, 2026-10-16: [Clock packs](CLOCK_PACKS.md) defines the digital clock and installable multi-clock sets. It supersedes earlier exclusions of clock packs or a second clock design. Version 1 uses native renderer templates and declarative JSON.
+
+
+## Product priority update, 2026-10-16
+
+Visual distinctiveness, rich clock components, and animation are core product goals. The requirements below retain their IDs while the notch specification is revised. Added requirements are recorded separately so earlier IDs are not silently renumbered. Idle timer budgets apply to time sampling at rest; they do not prohibit intentional presentation animation. Any continuous hand animation requires its own measured active-state budget.
+
+| ID | Stage | Requirement and acceptance criterion |
+|---|---|---|
+| FR-015 | First visual milestone | Deliver a distinctive clock face with deliberate shape, color, typography or hands, and depth/material treatment. Review at actual scale against the saved references and obtain owner design feedback before treating the visual direction as complete. |
+| FR-016 | First visual milestone | Design and demonstrate compact/expanded transitions, clock-face switching, and interaction feedback. Specify motion states and test interruption/reversal without jumps, clipped content, lost input, or focus theft. Exact effects and timing remain open. |
+| NFR-012 | Release | Evaluate animation frame pacing and energy separately from idle operation. Verify reduced-motion alternatives and no unintended animation work after transitions complete or while hidden/asleep. Establish active-motion budgets from the first prototype before final acceptance. |
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Status: proposed. IDs are stable. Changing a criterion requires an entry in [Decisions](DECISIONS.md). Core means M1 to M3; release adds M4 and M5. M0 validates feasibility first.

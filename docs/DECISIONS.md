@@ -1,5 +1,8 @@
 # Decisions and trade-offs
 
+> Implemented update, 2026-10-16: [Clock packs](CLOCK_PACKS.md) defines the digital clock and installable multi-clock sets. It supersedes earlier exclusions of clock packs or a second clock design. Version 1 uses native renderer templates and declarative JSON.
+
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Created 2026-10-15. Required constraints come directly from the supplied brief. Proposed ADRs are recommendations for discussion and have not been accepted by the owner. No ADR implies runtime verification.
@@ -40,7 +43,7 @@ Show one clock and persist a display hint plus normalized offsets. Always clamp 
 
 ## ADR-006: Text-only visual direction
 
-Status: proposed.
+Status: superseded by ADR-009 and ADR-010.
 
 Start with native text, monospaced system digits, explicit size/opacity, and automatic/light/dark text modes. Glass materials and notch attachment add compositing or geometry questions before the core clock is proven. A compact solid pill is the next candidate if readability feedback demands a background.
 
@@ -63,6 +66,16 @@ Status: owner-stated product direction, captured 2026-10-15. Technical design an
 The compact app extends on both sides of the notch, exactly matches the macOS menu-bar height, and never extends below the notch while compact. Expanded mode reveals switchable clock faces inspired by the seven saved images. A date or AI subscription usage widget is a possible companion, not an approved integration. See [Inspiration](INSPIRATION.md).
 
 This supersedes ADR-006's text-only recommendation and the notch deferral in the initial scope. ADR-003's free-floating presentation and ADR-005's drag-placement model require review. ADR-001's native Swift/AppKit constraint remains; clock-only scope must be revisited if a companion widget is selected. Existing FR/NFR IDs remain recorded, but geometry, analog rendering, scheduling, settings, roadmap, and testing need coordinated revision before implementation. No new technical feasibility claim is made by saving these references.
+
+## ADR-010: Aesthetics and animation are primary goals
+
+Status: owner-stated product priority, captured 2026-10-16.
+
+The owner is creating this project primarily for its aesthetics, rich UI components, and animations. A visually distinctive result is a central product goal. Treat clock faces, materials, depth, expressive details, and compact-to-expanded motion as core design work, with readability and accessibility built into that work.
+
+This supersedes the earlier exclusions of decorative motion and the recommendation to defer visual richness until after a plain-text clock. Swift/AppKit remains the stack. Animation timing, materials, continuous hand motion, and rendering technique remain design choices to prototype. Keep wall-time sampling distinct from visual animation and assess active-motion performance separately from idle efficiency.
+
+Affected documents include the PRD, visual direction, UI/UX, architecture, time engine, roadmap, requirements, and testing. Readability, Reduce Motion, compact notch geometry, and reliable lifecycle behavior remain acceptance concerns. This decision authorizes a documentation update, not application implementation.
 
 ## Decision record template
 

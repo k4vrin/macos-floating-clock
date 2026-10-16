@@ -1,25 +1,45 @@
 ---
 type: project-hub
-status: proposed
+status: prototype
 created: 2026-10-15
 language: en
 ---
 
 # macOS Floating Clock
 
+## First clock prototype
+
+Implemented 2026-10-16. The first native AppKit face, **The Wavy One**, adapts the cream/red reference with raised hour markers and wavy hands. A menu-bar-height horizontal analog clock, shaped after REF-03 and styled like the main face, expands into the clock/date panel with animated resizing and reduced-motion support. Click either compact wing to expand, click Collapse to close, or use the clock menu-bar icon for Expand/Collapse, Show/Hide, and Quit.
+
+Build and run from the repository root:
+
+```sh
+zsh scripts/build-app.sh
+open 'build/Wavy Clock.app'
+swift test
+```
+
+The build uses SwiftPM with Swift 6 language mode and the installed Xcode toolchain, then packages and ad-hoc signs a local `.app`. It is a development prototype, not a notarized distribution. Open `Package.swift` in Xcode to inspect the sources.
+
+See [First clock verification](docs/FIRST_CLOCK.md) for actual checks, resource measurements, limitations, and screenshot locations. Earlier planning documents remain proposals where not explicitly implemented. Analog and digital clocks, reusable date/AI widgets, pack installation, and saved selections are implemented. Claude needs its status-line connection configured. Launch at login and general settings remain planned.
+
+## Primary product goal, 2026-10-16
+
+The owner is creating this project primarily for its aesthetics, rich UI components, and animations. A visually distinctive result is a central product goal. Treat clock faces, materials, depth, expressive details, and compact-to-expanded motion as core design work, with readability and accessibility built into that work. See [the visual direction](docs/INSPIRATION.md) for the reference gallery and latest intent.
+
 A native macOS clock utility, now directed toward a compact notch bar with expandable clock designs and possible companion content.
 
-This folder contains planning documents for discussion. This repository contains documentation and inspiration only. No application source, build, performance results, or runtime verification exists for this project. The working name is provisional.
+This repository contains project documentation, reference images, and the first AppKit clock prototype. The working name is provisional.
 
 ## Latest direction, 2026-10-15
 
-See [Clock inspiration and notch bar direction](docs/INSPIRATION.md) for all seven saved reference images and the owner's updated concept. Compact mode extends on both sides of the notch, exactly matches the macOS menu-bar height, and does not extend below the notch. Expanded mode reveals switchable expressive clock designs. A date or AI subscription usage widget is a possible companion on the other side.
+See [Clock inspiration and notch bar direction](docs/INSPIRATION.md) for all seven saved reference images and the owner's updated concept. Compact mode extends on both sides of the notch, exactly matches the macOS menu-bar height, and does not extend below the notch. Expanded mode reveals switchable expressive clock designs. Date and AI subscription usage widgets now occupy the independently selectable right-hand slot.
 
-This replaces the earlier text-only floating-clock direction. The initial documents below are retained as a planning baseline, with notices where they need revision. They are not yet an implementation-ready specification for the notch bar.
+This replaces the earlier text-only floating-clock direction. The initial documents below are retained as a planning baseline, with notices where they need revision. Use the implemented clock-pack and right-side-widget documents for the current contracts.
 
-## Original product boundary, pending revision
+## Current prototype boundary
 
-The first release focuses on one local-time clock, one movable floating panel, a menu-bar item, settings, and reliable recovery after sleep or display changes. Swift and AppKit are required. SwiftUI, media controls, weather, widgets, cloud sync, plugins, and notch integration are outside this release.
+The prototype uses Swift and AppKit for one notch panel, analog and digital clock designs, independently selected right-side date/AI widgets, installable declarative packs, and lifecycle-aware refresh. Full settings, movable floating placement, launch at login, media controls, weather, cloud sync, and executable third-party plugins remain outside the implemented scope.
 
 The reference device is a 14-inch MacBook Pro with M1 Pro and a display notch. Proposed deployment baseline is macOS 13 or later, subject to the owner's installed OS and the compatibility matrix. An API being available does not mean that every OS version has been tested.
 
@@ -57,3 +77,15 @@ Local build artifacts and signing material belong outside the vault. Choose the 
 ## Evidence and status
 
 Technical research was checked against Apple documentation and selected installed Xcode SDK declarations on 2026-10-15. References appear beside the relevant recommendations. SDK declarations confirm availability, not runtime behavior. All performance numbers are proposed targets. See [Testing](docs/TESTING.md) for how evidence must be recorded.
+
+## Digital clock and installable sets
+
+The Originals set now includes analog and digital designs. Use the status menu **Clocks** to switch. **Install Clock Pack…** imports an additional set from JSON. See [Clock pack architecture and format](docs/CLOCK_PACKS.md) and the [Blue Hour example](examples/blue-hour.clockpack.json).
+
+## Right-side widgets
+
+Select a flip calendar or Codex/Claude usage desk from **Right-side Widgets**. Each supports compact and expanded views and can be included in an installed pack. [Architecture, provider connections, and limitations](docs/RIGHT_SIDE_WIDGETS.md).
+
+### Settings and theme plugins
+
+Right-click the compact clock and open **Settings…** to choose a monitor, clock, right-side widget, and theme. The app now prefers the built-in display and measures its menu-bar band automatically. Settings also includes 12/24-hour time, reduced animations, and start-expanded behavior. See [Settings](docs/SETTINGS.md) and [Theme plugins](docs/THEME_PLUGINS.md); [Tide Pool](examples/tide-pool.clockpack.json) is an installable theme-only example.

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "dev.kavrin.blue-hour",
+  "name": "Blue Hour",
+  "clocks": [
+    {
+      "id": "analog",
+      "name": "Blue Wavy",
+      "renderer": "wavyAnalog",
+      "accent": "237CA3"
+    },
+    {
+      "id": "digital",
+      "name": "Blue Digital",
+      "renderer": "capsuleDigital",
+      "accent": "237CA3"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "date",
+      "name": "Blue Calendar",
+      "renderer": "flipDate",
+      "accent": "237CA3"
+    },
+    {
+      "id": "usage",
+      "name": "Blue AI Desk",
+      "renderer": "aiUsage",
+      "accent": "237CA3"
+    }
+  ]
+}

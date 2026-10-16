@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "dev.kavrin.tide-pool",
+  "name": "Tide Pool",
+  "clocks": [],
+  "themes": [
+    {
+      "id": "sea-glass",
+      "name": "Sea glass",
+      "shell": "163A39",
+      "surface": "E0EEE6",
+      "ink": "204641",
+      "text": "E0EEE6",
+      "muted": "A7C4B8",
+      "clockAccent": "408B7C",
+      "widgetAccent": "A57836"
+    }
+  ]
+}

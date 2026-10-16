@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "dev.kavrin.desk-widgets",
+  "name": "Desk Widgets",
+  "clocks": [],
+  "widgets": [
+    {
+      "id": "date",
+      "name": "Blue Calendar",
+      "renderer": "flipDate",
+      "accent": "237CA3"
+    },
+    {
+      "id": "usage",
+      "name": "Sage AI Desk",
+      "renderer": "aiUsage",
+      "accent": "9BAF84"
+    }
+  ]
+}

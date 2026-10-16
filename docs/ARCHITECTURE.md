@@ -1,5 +1,15 @@
 # AppKit architecture
 
+> Implemented addition, 2026-10-16: [Right-side widgets](RIGHT_SIDE_WIDGETS.md) documents reusable calendar and AI usage items, independent slot selection, Codex app-server refresh, and the Claude status-line bridge.
+
+
+> Implemented update, 2026-10-16: [Clock packs](CLOCK_PACKS.md) defines the digital clock and installable multi-clock sets. It supersedes earlier exclusions of clock packs or a second clock design. Version 1 uses native renderer templates and declarative JSON.
+
+
+## Rendering direction update, 2026-10-16
+
+Rich clock components and animation are core product goals. Separate wall-time sampling from visual presentation and transition state. Native text may support labels and accessibility, but is not the prescribed renderer for every face. Evaluate AppKit drawing, Core Graphics, and Core Animation per design. The earlier text-only rendering and short-transition restrictions below are superseded. Do not choose an animation engine or continuous drawing loop before a prototype establishes the need.
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Status: recommended design, unimplemented. Required constraints and proposed choices are separated in [Decisions](DECISIONS.md).
@@ -51,7 +61,7 @@ Observe system events once. Route clock/time-zone/locale changes to the engine, 
 
 Own mutable UI state and timer callbacks on the main thread, preferably through Swift main-actor isolation. Formatting a few cached strings does not justify background queues. Rebuild formatters when relevant settings or locale/time zone change. Compare complete display state before assigning text or invalidating layout.
 
-Use native text rendering for font fallback and accessibility. Core Graphics is available for simple backgrounds or geometry if needed. Core Animation should handle only layer properties or short transitions justified by design. No display link, blinking colon, continuous layer animation, or custom glyph rasterizer is planned.
+Use native text rendering for font fallback and accessibility. Core Graphics is available for simple backgrounds or geometry if needed. Core Animation is a candidate for expressive transitions and layered clock components. Decide whether any face needs continuous hand motion during design, then measure it. Suspend animation work when hidden or asleep; avoid a permanent redraw loop solely for transitions that have finished.
 
 ## API and compatibility review
 
@@ -80,3 +90,7 @@ SwiftUI might later simplify a separate settings screen or support a WidgetKit e
 ## References
 
 Checked 2026-10-15: [NSPanel](https://developer.apple.com/documentation/appkit/nspanel), [NSStatusItem](https://developer.apple.com/documentation/appkit/nsstatusitem), [SMAppService](https://developer.apple.com/documentation/servicemanagement/smappservice). Detailed window and time references are in their owning documents.
+
+## Implemented settings and themes, 2026-10-16
+
+`AppPreferences` persists monitor UUID selection, theme, time format, reduced animations, and launch expansion state. `DisplayChoice` selects the target screen before `MenuBarGeometryResolver` computes its frame. `SettingsWindowController` sends preference and component callbacks to `AppDelegate`; it does not own placement or usage fetching. `ThemeDesign` extends data-only clock packs with optional palettes, applied independently to each native renderer. See [Settings](SETTINGS.md) and [Theme plugins](THEME_PLUGINS.md). Earlier floating-clock component diagrams remain planning history where they differ from these implemented classes.

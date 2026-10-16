@@ -8,3 +8,5 @@ xcuserdata/
 .env.*
 *.p12
 *.mobileprovision
+output/
+.swiftpm/

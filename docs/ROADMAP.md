@@ -1,5 +1,19 @@
 # Implementation roadmap
 
+> Implemented addition, 2026-10-16: [Right-side widgets](RIGHT_SIDE_WIDGETS.md) documents reusable calendar and AI usage items, independent slot selection, Codex app-server refresh, and the Claude status-line bridge.
+
+
+> Implemented update, 2026-10-16: [Clock packs](CLOCK_PACKS.md) defines the digital clock and installable multi-clock sets. It supersedes earlier exclusions of clock packs or a second clock design. Version 1 uses native renderer templates and declarative JSON.
+
+
+## Visual delivery priority, 2026-10-16
+
+The owner is creating this project primarily for its aesthetics, rich UI components, and animations. A visually distinctive result is a central product goal. Treat clock faces, materials, depth, expressive details, and compact-to-expanded motion as core design work, with readability and accessibility built into that work.
+
+Before the original implementation milestones below, define compact/expanded compositions and motion studies for expansion, collapse, and face switching. Pair the notch feasibility experiment with an early prototype of one expressive face and its transitions. Include visual and motion review in the first usable milestone rather than postponing aesthetics until final polish.
+
+Later acceptance must check transition interruption, reduced-motion behavior, frame pacing during animation, and energy after returning to rest. The detailed milestone sequence below still needs the coordinated notch revision; its text-only starting point is superseded.
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Status: proposed sequence, no milestones started. This plan does not authorize source implementation, create a repository, or reserve time in the learning schedule. No delivery dates are assumed.

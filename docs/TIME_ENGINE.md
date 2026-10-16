@@ -1,5 +1,9 @@
 # Time engine
 
+## Motion and clock cadence update, 2026-10-16
+
+Aesthetic animation is now a core goal. The boundary scheduler below governs wall-time sampling and discrete displayed values, not every animation frame. Presentation may interpolate hand positions or animate card changes using separately managed motion state. Continuous hand motion remains a design option, not an approved requirement. Reconcile animated values with current wall time after interruptions, wake, and visibility changes. The older ban on frame-rate work must not be interpreted as a ban on animation; any active frame-driven work needs a measured reason and lifecycle cancellation.
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Status: proposed. Covers FR-001, FR-004, FR-009, FR-012, and NFR-003/NFR-004.

@@ -1,5 +1,11 @@
 # Testing and verification
 
+## Visual and motion acceptance, 2026-10-16
+
+Include design review against the saved references and primary aesthetic goal. Review the chosen face, compact/expanded compositions, materials, and interaction feedback at actual display scale. A technically correct generic clock is not sufficient for the stated product intent.
+
+Exercise expansion/collapse and face switching, including rapid reversal, repeated activation, display changes mid-transition, and sleep/wake. Check clipping, flicker, discontinuities, input responsiveness, and Reduce Motion behavior. Measure frame pacing, main-thread work, and energy during transitions separately from steady idle. Confirm animation work stops after completion and when hidden/asleep. Exact motion budgets need definition after the first prototype; do not report an unmeasured smoothness guarantee.
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Status: strategy only. No tests, runtime checks, performance samples, or rendered diagrams have been executed for an application in this project.
@@ -53,3 +59,15 @@ Use the intended signed installed bundle at a stable location. Enable login star
 For every acceptance run, record requirement ID, environment, procedure, expected result, actual result, pass/fail/unverified, source revision, and artifact location. Keep large traces and generated builds outside the vault; store concise summaries and safe links here if later requested.
 
 M5 cannot pass solely on deterministic tests. It needs actual AppKit behavior, multi-display recovery, login, accessibility, and performance evidence. A proposed budget may change only through a documented decision backed by measurements. Open full-screen limitations need explicit product review before release claims.
+
+## Adaptive compact geometry
+
+See [COMPACT_GEOMETRY.md](COMPACT_GEOMETRY.md) for geometry regression coverage, connected-display observations, performance samples, and remaining hardware checks.
+
+## Settings and theme plugins, 2026-10-16
+
+- Final `swift test`: 24 tests passed, including preferences persistence, stable monitor selection and disconnection fallback, theme-only/legacy pack decoding, duplicate theme IDs, invalid RGB values, explicit 12/24-hour formatting, and theme retention after clock replacement.
+- Native UI: selected external G27F (22-point compact band, no cutout), restored the built-in Retina display (32-point band, 185-point cutout), installed Tide Pool through the file picker, selected Sea glass, and expanded the themed clock. A subsequent app launch restored the monitor and theme.
+- Native Settings window includes monitor, clock, widget, theme, 24-hour time, reduced animation, and start-expanded controls. Closing Settings keeps the clock running. Clock replacement and preference toggles were also exercised from the window.
+- Existing 72-second performance probe, built-in Retina display and Sea glass theme: mean CPU as a percentage of one core was 1.575 compact, 1.644 expanded, 11.074 during repeated transitions, and 0.484 after recovery to compact. Peak RSS was 95.188 MiB; peak physical footprint was 67.767 MiB. These short measurements include live provider refreshes and are not long-term memory-leak or idle benchmarks. The final time-label formatting fix adds no timers or rendering cadence changes.
+- Older macOS releases and physical display disconnection/reconnection remain manual hardware checks. Theme loading is JSON-only; arbitrary executable plugins are not supported.

@@ -1,5 +1,9 @@
 # Product requirements
 
+## Primary product goal, 2026-10-16
+
+The owner is creating this project primarily for its aesthetics, rich UI components, and animations. A visually distinctive result is a central product goal. Treat clock faces, materials, depth, expressive details, and compact-to-expanded motion as core design work, with readability and accessibility built into that work. See [the visual direction](INSPIRATION.md) for the reference gallery and latest intent.
+
 > Direction update, 2026-10-15: [Inspiration and notch bar direction](INSPIRATION.md) records the owner's latest concept and takes precedence over conflicting statements here. This document describes the earlier floating-clock baseline and needs revision before implementing the notch bar.
 
 Status: proposed for discussion, 2026-10-15. The [requirements register](REQUIREMENTS.md) owns acceptance criteria; this document owns product scope.

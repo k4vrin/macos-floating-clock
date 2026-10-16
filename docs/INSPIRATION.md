@@ -1,5 +1,19 @@
 # Clock inspiration and notch bar direction
 
+## Compact clock form correction, 2026-10-16
+
+The owner clarified that REF-03's horizontal clock is the compact clock's form reference, not merely inspiration for rounding the enclosing bar. Compact mode must show an actual analog dial in that elongated body, with a rounded outer end and a square mounting end toward the notch. Retain the expanded Wavy face's cream dial, red housing/rim, colored markers, and wavy red/black hands. Do not copy the reference's straight hands, typography, or terracotta palette as a new clock theme.
+
+Implemented the miniature analog clock on the left, with the existing short date on the right. It occupies the existing menu-bar-height bounds; no taller compact window or second timer was added. Main and compact faces share the same wavy-hand drawing and current-time sample. Hands fit the elongated dial at every angle. Clicking the miniature clock expands the main view, and it exposes an accessible button with the current time.
+
+The current miniature is 84 points wide and as tall as the bar. The black outer pill with digital time is superseded. The expanded circular face remains the main clock. Live expansion/collapse was checked and actual window screenshots were saved under ignored `output/screenshots/compact-horizontal-live.png` and `output/screenshots/expanded-horizontal-live.png` in the project checkout.
+
+## Visual priority, 2026-10-16
+
+The owner is creating this project primarily for its aesthetics, rich UI components, and animations. A visually distinctive result is a central product goal. Treat clock faces, materials, depth, expressive details, and compact-to-expanded motion as core design work, with readability and accessibility built into that work.
+
+The supplied physical clocks guide the visual character. Expansion/collapse, clock switching, and component feedback should receive deliberate motion design. Exact effects, durations, and face selection remain open; the owner has established the priority, not a finished motion specification. This supersedes earlier guidance to keep the product text-only or exclude decorative animation.
+
 Captured 2026-10-15 from seven images supplied by the owner. These local copies preserve the original images without cropping or modification. They are visual references, not finished interface designs. Original source URLs and authorship were not supplied; visible brand text is part of the reference photography, not proposed app branding.
 
 ## Latest product direction
@@ -11,6 +25,10 @@ In expanded mode, the app can reveal the larger, expressive clocks inspired by t
 The two sides can serve different purposes: a clock on one side, and potentially a date widget or AI subscription usage widget on the other. Date and usage are ideas to explore, not approved integrations or a finalized release scope. Which side holds the clock is not yet specified.
 
 This direction supersedes the earlier recommendation to defer notch placement and start with a freely movable text-only floating clock. The existing technical documents preserve that initial proposal and need a coordinated revision before implementation. Swift and AppKit remain the requested stack. No app code, API integration, or runtime geometry verification was added in this capture step.
+
+## Compact silhouette correction, 2026-10-16
+
+The owner selected REF-03, the horizontal terracotta clock, as the reference for the compact form specifically. Use a horizontal body with a rounded outer cap and a straight inner edge against the notch, mirrored for the other wing. The notch joins the inner edges; the outer contour reads as a slim capsule. Keep the menu-bar height constraint. This correction does not select the photographed clock face, numerals, hands, or terracotta color, and does not change the expanded Wavy face.
 
 ## State and layout intent
 
