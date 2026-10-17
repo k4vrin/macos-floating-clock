@@ -3,12 +3,19 @@ import QuartzCore
 
 @MainActor
 final class ClockPanel: NSPanel {
+    var onPointerEvent: ((NSEvent) -> Void)?
+    override func sendEvent(_ event: NSEvent) {
+        if [.mouseMoved, .leftMouseDragged, .leftMouseDown, .rightMouseDown].contains(event.type) {
+            onPointerEvent?(event)
+        }
+        super.sendEvent(event)
+    }
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 }
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let packStore = ClockPackStore(directory: FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appendingPathComponent("WavyClock/ClockPacks", isDirectory: true))
     private var packs = [ClockPack.builtIn]
@@ -27,6 +34,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var timer: Timer?
     private var probe: PerformanceProbe?
+    private let morph = MorphTransition()
+    private var hoverExit: Timer?
+    private var globalPointerMonitor: Any?
+    private var localPointerMonitor: Any?
+    private var menuTracking = false
     private var expanded = false
     private var visible = true
     private var sleeping = false
@@ -41,9 +53,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         content = ClockContentView(frame: NSRect(x: 0, y: 0, width: 640, height: 390))
-        content.onToggle = { [weak self] in self?.toggleExpanded() }
+        content.onHoverChanged = { [weak self] event in
+            guard let self else { return }
+            self.evaluateHover(at: self.panel.convertPoint(toScreen: event.locationInWindow))
+        }
+        morph.onUpdate = { [weak self] progress in
+            guard let self else { return }
+            self.content.setProgress(progress)
+            self.applyFrame(animated: false)
+        }
         panel = ClockPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel],
                            backing: .buffered, defer: false)
+        panel.onPointerEvent = { [weak self] event in
+            guard let self else { return }
+            self.evaluateHover(at: self.panel.convertPoint(toScreen: event.locationInWindow))
+        }
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
@@ -83,48 +107,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             probe = PerformanceProbe(output: URL(fileURLWithPath: args[index + 1]),
                                      toggle: { [weak self] in self?.toggleExpanded() })
             probe?.start()
-        } else if args.contains("--expanded") || preferences.startExpanded {
-            toggleExpanded()
         }
+        evaluateHover()
     }
 
     private func setupMenu() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         statusItem.button?.image = NSImage(systemSymbolName: "clock", accessibilityDescription: "Wavy Clock")
         let menu = NSMenu()
-        for (title, selector, key) in [("Expand / Collapse", #selector(toggleExpanded), "e"),
-                                       ("Show / Hide", #selector(toggleVisible), "h"),
+        for (title, selector, key) in [("Show / Hide", #selector(toggleVisible), "h"),
                                        ("Quit Wavy Clock", #selector(quit), "q")] {
             let item = NSMenuItem(title: title, action: selector, keyEquivalent: key)
             item.target = self
             menu.addItem(item)
         }
-        menu.insertItem(.separator(), at: 2)
+        menu.insertItem(.separator(), at: 1)
         let clocks = NSMenuItem(title: "Clocks", action: nil, keyEquivalent: "")
         clocks.submenu = clockMenu
-        menu.insertItem(clocks, at: 3)
+        menu.insertItem(clocks, at: 2)
         let install = NSMenuItem(title: "Install Theme or Clock Pack…", action: #selector(installPack), keyEquivalent: "")
         install.target = self
-        menu.insertItem(install, at: 4)
+        menu.insertItem(install, at: 3)
         let widgets = NSMenuItem(title: "Right-side Widgets", action: nil, keyEquivalent: "")
         widgets.submenu = widgetMenu
-        menu.insertItem(widgets, at: 5)
+        menu.insertItem(widgets, at: 4)
         for (offset, title, selector) in [
-            (6, "Connect / Refresh AI Usage", #selector(refreshUsageNow)),
-            (7, "Claude Connection Instructions…", #selector(showClaudeInstructions)),
-            (8, "Disconnect Codex Usage", #selector(disconnectCodex))
+            (5, "Connect / Refresh AI Usage", #selector(refreshUsageNow)),
+            (6, "Claude Connection Instructions…", #selector(showClaudeInstructions)),
+            (7, "Disconnect Codex Usage", #selector(disconnectCodex))
         ] {
             let item = NSMenuItem(title: title, action: selector, keyEquivalent: "")
             item.target = self
             menu.insertItem(item, at: offset)
         }
-        menu.insertItem(.separator(), at: 9)
+        menu.insertItem(.separator(), at: 8)
         let settings = NSMenuItem(title: "Settings…", action: #selector(showSettings), keyEquivalent: ",")
         settings.target = self
-        menu.insertItem(settings, at: 10)
+        menu.insertItem(settings, at: 9)
         rebuildClockMenu()
         statusItem.menu = menu
         content.menu = menu
+        menu.delegate = self
     }
 
     private func design(for key: String) -> ClockDesign? {
@@ -346,6 +369,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func observeEvents() {
+        globalPointerMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { [weak self] _ in
+            MainActor.assumeIsolated { self?.evaluateHover() }
+        }
+        localPointerMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDragged]) { [weak self] event in
+            MainActor.assumeIsolated { self?.evaluateHover() }
+            return event
+        }
+        panel.acceptsMouseMovedEvents = true
         let center = NotificationCenter.default
         for name in [Notification.Name.NSSystemClockDidChange,
                      .NSSystemTimeZoneDidChange, NSLocale.currentLocaleDidChangeNotification] {
@@ -407,29 +438,66 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func applyFrame(animated: Bool) {
         guard let geometry else { return }
-        let frame = geometry.frame(expanded: expanded)
-        guard panel.frame != frame else { return }
-        let duration = preferences.reduceMotion || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion ? 0 : 0.36
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = animated ? duration : 0
-            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1, 0.36, 1)
-            if animated { panel.animator().setFrame(frame, display: true) }
-            else { panel.setFrame(frame, display: true) }
-        }
+        let frame = mix(geometry.frame(expanded: false), geometry.frame(expanded: true), content.progress)
+        if panel.frame != frame { panel.setFrame(frame, display: true) }
         content.needsLayout = true
     }
 
-    @objc func toggleExpanded() {
-        expanded.toggle()
-        content.setExpanded(expanded, animated: true)
-        applyFrame(animated: true)
+    private func pointerIsInside(at position: NSPoint? = nil) -> Bool {
+        guard visible, !sleeping, panel.isVisible, let geometry else { return false }
+        let point = position ?? NSEvent.mouseLocation
+        if point.y > geometry.screenFrame.maxY - geometry.height && abs(point.x - geometry.center) < geometry.gap / 2 { return false }
+        return panel.frame.contains(point)
+    }
+
+    private func evaluateHover(at position: NSPoint? = nil) {
+        guard !menuTracking else { return }
+        if pointerIsInside(at: position) {
+            hoverExit?.invalidate(); hoverExit = nil
+            setExpanded(true)
+        } else if expanded && hoverExit == nil {
+            // Brief exit grace lets the pointer cross the growing outline without flicker.
+            let timer = Timer(timeInterval: 0.12, repeats: false) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.hoverExit = nil
+                    if !self.pointerIsInside() && !self.menuTracking { self.setExpanded(false) }
+                }
+            }
+            RunLoop.main.add(timer, forMode: .common)
+            hoverExit = timer
+        }
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        menuTracking = true
+        hoverExit?.invalidate(); hoverExit = nil
+    }
+    func menuDidClose(_ menu: NSMenu) {
+        menuTracking = false
+        evaluateHover()
+    }
+
+    private func setExpanded(_ value: Bool, animated: Bool = true) {
+        guard expanded != value || !animated else { return }
+        expanded = value
+        content.setExpanded(value, animated: animated)
+        let reduced = preferences.reduceMotion || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        morph.move(to: value ? 1 : 0, animated: animated && !reduced)
         refresh()
     }
+
+    // The deterministic probe can exercise both endpoints without manufacturing pointer events.
+    @objc func toggleExpanded() { setExpanded(!expanded) }
 
     @objc private func toggleVisible() {
         visible.toggle()
         if visible { reconcileScreen(); if geometry != nil { panel.orderFrontRegardless() }; refresh() }
-        else { panel.orderOut(nil); timer?.invalidate(); timer = nil; usageClient.cancel() }
+        else {
+            hoverExit?.invalidate(); hoverExit = nil
+            setExpanded(false, animated: false)
+            panel.orderOut(nil); timer?.invalidate(); timer = nil; usageClient.cancel()
+        }
     }
 
     private func refresh() {
@@ -449,13 +517,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func tick() { refresh() }
     @objc private func systemChanged() { content.configureFormatters(); reconcileScreen(); refresh() }
-    @objc private func suspendClock() { sleeping = true; timer?.invalidate(); timer = nil; usageClient.cancel() }
+    @objc private func suspendClock() {
+        sleeping = true
+        hoverExit?.invalidate(); hoverExit = nil
+        setExpanded(false, animated: false)
+        timer?.invalidate(); timer = nil; usageClient.cancel()
+    }
     @objc private func resumeClock() { sleeping = false; systemChanged() }
     @objc private func quit() { NSApp.terminate(nil) }
 
     func applicationWillTerminate(_ notification: Notification) {
         timer?.invalidate()
         presentationObservation = nil
+        hoverExit?.invalidate()
+        morph.stop()
+        if let globalPointerMonitor { NSEvent.removeMonitor(globalPointerMonitor) }
+        if let localPointerMonitor { NSEvent.removeMonitor(localPointerMonitor) }
         usageClient.cancel()
         NotificationCenter.default.removeObserver(self)
         NSWorkspace.shared.notificationCenter.removeObserver(self)

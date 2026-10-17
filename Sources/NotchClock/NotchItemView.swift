@@ -2,6 +2,7 @@ import AppKit
 
 @MainActor
 class NotchItemView: NSView {
+    var expansionProgress: CGFloat = 0 { didSet { needsDisplay = true } }
     var visualFamily = VisualFamily.wavy { didSet { needsDisplay = true } }
     var palette = ThemePalette() { didSet { needsDisplay = true } }
     var uses24HourTime = true { didSet { needsDisplay = true } }
@@ -22,7 +23,9 @@ enum ClockViewFactory {
     static func make(_ design: ClockDesign, compact: Bool) -> NotchItemView {
         let view: NotchItemView
         switch design.renderer {
-        case .wavyAnalog: view = compact ? CompactClockView() : ClockFaceView()
+        case .wavyAnalog:
+            view = CompactClockView()
+            view.expansionProgress = compact ? 0 : 1
         case .capsuleDigital: view = DigitalClockView(compact: compact)
         }
         let rgb = UInt32(design.accent, radix: 16) ?? 0xC93D33

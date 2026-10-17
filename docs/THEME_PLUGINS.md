@@ -31,3 +31,11 @@ All seven colors are required six-digit RGB strings without `#`. `shell` colors 
 The selected theme applies to both compact and expanded components and survives clock or widget replacement. Palettes are held per view so native previews can render different themes without changing another clock instance.
 
 Install [the example](../examples/tide-pool.clockpack.json), then choose **Tide Pool · Sea glass** from Theme. Bundled choices are Original objects, Blue hour, and Plum & brass. Plugins reuse renderers; they cannot add arbitrary native view code, animation scripts, fonts, or assets. There is no theme marketplace or update service in this prototype.
+
+## Shared component families
+
+The current theme recipe includes the clock, calendar, and usage desk. Each uses the same surface, bezel, mounting treatment, and housing accent. Wavy primary values use the custom numeral paths; Counter primary values use split tiles. `widgetAccent` remains accepted for manifest compatibility, but no longer creates an unrelated widget housing. With `usesDesignAccents`, the selected clock accent applies to both sides.
+
+Optional `family` accepts `wavy` or `counter`; choosing that theme recommends the family for the entire bar. The Visual family control can override the recommendation. Counter objects is a bundled theme that selects Counter. The [complete Wavy Objects example](../examples/wavy-objects.clockpack.json) includes both clocks, both right-side items, and a matching theme in one plugin.
+
+Choose a theme from **Settings → Theme plugin**. All components and intermediate morph states use that choice. The earlier per-widget design-accent behavior described above is superseded by this shared housing contract.

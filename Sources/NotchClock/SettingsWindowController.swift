@@ -43,7 +43,6 @@ final class SettingsWindowController: NSWindowController {
     private let family = NSPopUpButton()
     private let timeFormat = NSButton(checkboxWithTitle: "Use 24-hour time", target: nil, action: nil)
     private let motion = NSButton(checkboxWithTitle: "Reduce animations", target: nil, action: nil)
-    private let startup = NSButton(checkboxWithTitle: "Start expanded", target: nil, action: nil)
     private let diagnostics = NSTextField(wrappingLabelWithString: "")
     private let sample = ThemeSampleView()
 
@@ -74,7 +73,7 @@ final class SettingsWindowController: NSWindowController {
         stack.addArrangedSubview(sample)
         sample.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         for (index, label, popup) in [(0, "Display", display), (1, "Clock", clock),
-                                      (2, "Right side", widget), (4, "Visual family", family), (3, "Palette", theme)] {
+                                      (2, "Right side", widget), (4, "Visual family", family), (3, "Theme plugin", theme)] {
             popup.tag = index
             popup.target = self
             popup.action = #selector(choiceChanged(_:))
@@ -95,7 +94,7 @@ final class SettingsWindowController: NSWindowController {
         separator.boxType = .separator
         stack.addArrangedSubview(separator)
         separator.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        for (index, button) in [timeFormat, motion, startup].enumerated() {
+        for (index, button) in [timeFormat, motion].enumerated() {
             button.tag = index
             button.target = self
             button.action = #selector(preferenceChanged(_:))
@@ -127,7 +126,6 @@ final class SettingsWindowController: NSWindowController {
         diagnostics.stringValue = geometryDescription
         timeFormat.state = preferences.uses24HourTime ? .on : .off
         motion.state = preferences.reduceMotion ? .on : .off
-        startup.state = preferences.startExpanded ? .on : .off
     }
 
     private func populate(_ popup: NSPopUpButton, choices: [SettingsChoice], selected: String) {
@@ -167,7 +165,7 @@ final class SettingsWindowController: NSWindowController {
         switch sender.tag {
         case 0: preferences.uses24HourTime = sender.state == .on
         case 1: preferences.reduceMotion = sender.state == .on
-        default: preferences.startExpanded = sender.state == .on
+        default: break
         }
         onPreferencesChanged?(preferences)
     }

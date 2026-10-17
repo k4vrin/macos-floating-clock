@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "dev.kavrin.wavy-objects",
+  "name": "Wavy Objects",
+  "clocks": [
+    {
+      "id": "analog",
+      "name": "Wavy analog",
+      "renderer": "wavyAnalog",
+      "accent": "C93D33"
+    },
+    {
+      "id": "digital",
+      "name": "Wavy digital",
+      "renderer": "capsuleDigital",
+      "accent": "C93D33"
+    }
+  ],
+  "widgets": [
+    {
+      "id": "calendar",
+      "name": "Wavy calendar",
+      "renderer": "flipDate",
+      "accent": "C93D33"
+    },
+    {
+      "id": "usage",
+      "name": "Wavy usage desk",
+      "renderer": "aiUsage",
+      "accent": "C93D33"
+    }
+  ],
+  "themes": [
+    {
+      "id": "wavy",
+      "name": "Wavy cream and red",
+      "family": "wavy",
+      "shell": "191919",
+      "surface": "F0E6C4",
+      "ink": "1F211F",
+      "text": "F0E6C4",
+      "muted": "918F85",
+      "clockAccent": "C93D33",
+      "widgetAccent": "C93D33"
+    }
+  ]
+}
