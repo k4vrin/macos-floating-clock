@@ -28,3 +28,7 @@ Theme plugins use the same local pack directory as clocks and widgets. See [Them
 ## Scope and remaining checks
 
 This settings window does not implement launch-at-login registration, arbitrary fonts, a manual compact-height override, or multiple simultaneous clock panels. Previous floating-clock settings proposals are superseded by the implemented controls above. Older macOS versions and physical monitor disconnect/reconnect remain manual hardware checks; fallback/selection behavior is covered by deterministic tests.
+
+## Hover-only expansion
+
+Expansion now follows pointer presence. Start expanded is removed from Settings, and legacy saved values are ignored. Clicks do not latch the panel open. Leaving the panel collapses it automatically after a brief exit grace, with menu tracking temporarily preserving the panel while a submenu is open. Reduce animations also disables the spatial morph.

@@ -20,7 +20,11 @@ class WidgetSurfaceView: NotchItemView {
     var snapshots: [UsageProvider: UsageSnapshot] = [:] { didSet { needsDisplay = true } }
     var providerStatus: [UsageProvider: String] = [:] { didSet { needsDisplay = true } }
 
-    init(compact: Bool) { self.compact = compact; super.init(frame: .zero) }
+    init(compact: Bool) {
+        self.compact = compact
+        super.init(frame: .zero)
+        expansionProgress = compact ? 0 : 1
+    }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     func updateAccessibility() { }

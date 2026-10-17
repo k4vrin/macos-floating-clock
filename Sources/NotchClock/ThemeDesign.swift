@@ -16,11 +16,13 @@ struct ThemeDesign: Codable, Equatable, Sendable {
 
     static let originals = [
         ThemeDesign(id: "original", name: "Original objects", shell: "0E0F0E", surface: "F0E6C4", ink: "1F211F",
-                    text: "F0E6C4", muted: "918F85", clockAccent: "C93D33", widgetAccent: "D35C3F", usesDesignAccents: true),
+                    text: "F0E6C4", muted: "918F85", clockAccent: "C93D33", widgetAccent: "D35C3F", usesDesignAccents: true, family: .wavy),
         ThemeDesign(id: "blue-hour", name: "Blue hour", shell: "142836", surface: "DDECF0", ink: "173D55",
                     text: "DDECF0", muted: "A0BBC7", clockAccent: "287EA5", widgetAccent: "347B92"),
         ThemeDesign(id: "plum", name: "Plum & brass", shell: "302332", surface: "F0E1D0", ink: "3D293E",
-                    text: "F0E1D0", muted: "C3A8BB", clockAccent: "88516E", widgetAccent: "956742")
+                    text: "F0E1D0", muted: "C3A8BB", clockAccent: "88516E", widgetAccent: "956742"),
+        ThemeDesign(id: "counter", name: "Counter objects", shell: "182124", surface: "EFE5CA", ink: "20292B",
+                    text: "EFE5CA", muted: "A6AAA3", clockAccent: "C48B36", widgetAccent: "C48B36", family: .counter)
     ]
 
     var hasValidColors: Bool {

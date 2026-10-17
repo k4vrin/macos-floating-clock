@@ -94,3 +94,7 @@ Checked 2026-10-15: [NSPanel](https://developer.apple.com/documentation/appkit/n
 ## Implemented settings and themes, 2026-10-16
 
 `AppPreferences` persists monitor UUID selection, theme, time format, reduced animations, and launch expansion state. `DisplayChoice` selects the target screen before `MenuBarGeometryResolver` computes its frame. `SettingsWindowController` sends preference and component callbacks to `AppDelegate`; it does not own placement or usage fetching. `ThemeDesign` extends data-only clock packs with optional palettes, applied independently to each native renderer. See [Settings](SETTINGS.md) and [Theme plugins](THEME_PLUGINS.md). Earlier floating-clock component diagrams remain planning history where they differ from these implemented classes.
+
+## Shared theme and hover transition implementation
+
+`ClockContentView` now owns one clock view and one companion view. `ClockViewFactory` uses `CompactClockView` for both analog endpoints; its normalized marker and hand geometry moves continuously into the full dial. `DigitalClockView`, `DateWidgetView`, and `UsageWidgetView` use `ThemeDrawing` for shared housings and family-specific numerals. `MorphMotion` supplies reversible spring state and `MorphTransition` schedules transition frames only while moving. `AppDelegate` resolves pointer intent, menu tracking, display geometry, and lifecycle cancellation, and uses the same progress for the panel frame. See [the design and behavior contract](VISUAL_FAMILIES_AND_MORPH.md).

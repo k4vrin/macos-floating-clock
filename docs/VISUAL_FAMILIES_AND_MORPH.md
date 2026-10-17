@@ -1,32 +1,43 @@
-# Visual families and hover morphing
+# Shared theme objects and hover morph
 
-Status: implementation started in a stack based on the completed native app baseline. This document separates delivered layers from the remaining visual and motion work.
+Implemented in `feature/coherent-widgets-hover-morph`, stacked above the Wavy numeral renderer.
 
-## Design contract
+## One theme, all components
 
-Components choose information: analog/digital time, calendar, or AI usage. A visual family chooses the native design recipe. A palette chooses colors and materials. Wavy is the intended current family, including custom vector numerals inspired by the analog hands. Counter preserves the existing tiled digital design as a separate family.
+Clock, calendar, and usage desk now share the same housing accent, cream material, ink bezel, mounting seam, and numeral renderer. Wavy uses custom vector numerals for time, day, and subscription percentages. Counter uses split tiles for those same values. Supporting labels remain native text for readability.
 
-The clock and right-side widget must eventually share housing details, typography, stroke weights, material depth, and animation. Palettes remain independently selectable. Existing version 1 JSON palettes remain compatible. An optional `family` recommendation accepts only `wavy` or `counter`; selecting such a palette chooses its recommended family. Unsupported family names fail decoding. JSON cannot execute code or introduce arbitrary native renderers.
+A theme plugin chooses colors and can recommend `family: "wavy"` or `family: "counter"`. The existing Visual family control remains an explicit override. Changing a component changes its information, not the selected family's appearance. The clock's design accent, when enabled by a legacy palette, supplies the housing accent for both sides.
 
-## Stack layers
+[Wavy Objects](../examples/wavy-objects.clockpack.json) packages analog and digital clocks, calendar, usage desk, and a Wavy theme in one installable manifest. Existing version 1 manifests remain compatible. JSON selects native recipes; it cannot execute code or introduce arbitrary renderers.
 
-1. Visual-family foundation: saved Wavy/Counter preference, separate Visual family and Palette controls, optional validated plugin recommendation, and family propagation to recreated views. This layer establishes the contract; it does not claim finished family-specific artwork.
-2. Wavy numeral renderer: reusable vector digits, colon, and percentage symbol; the Wavy digital clock uses them in both sizes, while Counter retains tiled digits. This starts the artwork layer, not the full coherent widget family.
-3. Remaining family artwork: matching compact and expanded analog, date, and AI components, with wavy primary numerals and readable native supporting labels. Finish Counter's matching calendar and usage treatment. Review both families as complete contact sheets.
-4. Hover morph: shared transition coordinator and semantic component geometry. Replace independent window resizing/fading with a continuous, reversible transformation. Add hover and accessibility behavior, then capture motion recordings and compare resource use.
+![Matching Wavy clock and calendar](previews/wavy-calendar-expanded.png)
 
-## Morph behavior to implement
+![Matching Wavy clock and usage desk](previews/wavy-usage-expanded.png)
 
-Keep the measured menu-bar height and physical notch exclusion authoritative. The shell grows downward from its fixed top anchor. The same recognizable clock hands, numerals, date, and usage gauges move into their expanded locations; secondary labels appear as room opens up. Use compatible paths/layers for shape changes rather than substituting unrelated screens.
+The usage preview contains synthetic percentages, not account data.
 
-Maintain independent hover intent, click-expanded state, and transition progress. Proposed starting values are 100–150 ms hover intent, 250–350 ms exit grace, and 350–450 ms expansion. Tune by observation, not fixed assumptions about an Apple animation. Allow entry during collapse to reverse from the current presentation position. Keep the app open while menus or settings interactions require it. Preserve click and keyboard alternatives and an option to disable hover. Reduce Motion removes the spatial morph.
+## Hover behavior
 
-One main-actor transition coordinator owns progress and cancellation. Retarget in-flight motion instead of stacking completion handlers. Stop transition-only work at rest; preserve the existing clock/provider scheduling. Do not expand hit areas into the physical notch or keep a large invisible panel intercepting unrelated clicks.
+Hover either compact wing to expand. Leaving the current panel starts a 120 ms exit grace, then collapses automatically. Re-entry cancels pending collapse or reverses an in-flight spring from its current position and velocity. There is no click latch, Expand/Collapse menu action, collapse button, or start-expanded setting. Old saved startup preferences remain readable but do not control expansion.
 
-## Review and validation
+Menus temporarily suspend hover dismissal so submenu selection remains usable. Closing the menu reevaluates the pointer. Settings itself does not pin the expanded panel. Hide and sleep cancel pending hover dismissal, snap closed, and stop transition work. The camera cutout is excluded from hover and hit testing.
 
-Review a wavy numeral sheet, then compact/expanded contact sheets for both families. Verify all digits, `11:11`, `08:08`, `100%`, and 12/24-hour format. Test palette changes and clock/widget replacements without losing the chosen family.
+## Continuous geometry
 
-For motion, check frame continuity, interrupted transitions, rapid entry/exit, menu interactions, Reduce Motion, monitor changes, and hidden/sleeping operation. Record short native videos plus CPU/memory probes on the built-in Retina display. Existing 32-point sizing must remain intact at the compact resting state. Older macOS and physical reconnection remain explicit hardware checks.
+`ClockContentView` owns exactly one clock and one companion view. Their frames interpolate from menu-bar wings to expanded desk positions. The same analog hands/markers or digital numerals, date digits, and usage percentages/tracks draw throughout the transition. Secondary labels reveal when there is space. No duplicate compact row or swapped detail panel fades in.
 
-References: Apple's [Designing Fluid Interfaces](https://developer.apple.com/videos/play/wwdc2018/803/), [Animate with springs](https://developer.apple.com/videos/play/wwdc2023/10158/), and [Motion guidance](https://developer.apple.com/design/human-interface-guidelines/motion). The references inform responsiveness, continuity, and interruptibility; the proposed timings above are this app's starting values.
+`MorphTransition` owns one critically damped spring and a 60 Hz timer only while moving. One scalar drives window position/size, component frames, housing contours, numeral geometry, and label positions. The top edge remains anchored to the measured display band. Reduce Motion snaps to the endpoint. At rest the animation timer is invalidated; the existing clock/provider refresh scheduling remains in control.
+
+![Native view morph preview](previews/hover-morph.gif)
+
+This GIF renders the same native views and spring at 20 frames per second with a fixed sample time. It is a reproducible design preview, not a recording of pointer input. The live app was checked separately for entry expansion and exit collapse on the built-in notched display.
+
+## Validation
+
+- 32 Swift tests pass, including spring reversal, rest endpoints, view identity across intermediate states, theme preservation, notch hit exclusion, and fixed top anchoring on an offset external-display geometry.
+- Release build succeeds with no new dependencies.
+- Native previews reviewed at 0%, 25%, 50%, 75%, and 100% for Wavy/Counter calendars and usage desks. Calendar labels stay separated during travel.
+- Live native app verified expanding on pointer entry and automatically returning to the menu-bar band when the pointer leaves the usable region.
+- CPU and memory probe results are recorded in [hover morph verification](HOVER_MORPH_VERIFICATION.md).
+
+Run `zsh scripts/render-theme-previews.sh /tmp/theme-previews` for PNG endpoints, intermediate states, and motion frames. Rendering does not read or alter saved provider data. Physical external-monitor reconnection, older macOS versions, VoiceOver-only interaction, and live Reduce Motion transitions still require hardware/manual coverage. Hover-only operation intentionally removes the prior keyboard/click expansion alternative.
