@@ -39,3 +39,5 @@ The current theme recipe includes the clock, calendar, and usage desk. Each uses
 Optional `family` accepts `wavy` or `counter`; choosing that theme recommends the family for the entire bar. The Visual family control can override the recommendation. Counter objects is a bundled theme that selects Counter. The [complete Wavy Objects example](../examples/wavy-objects.clockpack.json) includes both clocks, both right-side items, and a matching theme in one plugin.
 
 Choose a theme from **Settings → Theme plugin**. All components and intermediate morph states use that choice. The earlier per-widget design-accent behavior described above is superseded by this shared housing contract.
+
+Usage desk designs can additionally select `provider: "codex"` or `provider: "claude"`. Both use the same selected theme and numeral family; provider selection controls data, not appearance. The Wavy Objects and Desk Widgets examples now include a separate desk for each provider.

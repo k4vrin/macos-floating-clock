@@ -11,7 +11,7 @@ let directory = URL(fileURLWithPath: CommandLine.arguments[1])
 try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 let date = Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 17, hour: 10, minute: 10))!
 for family in VisualFamily.allCases {
- for widgetIndex in [0, 1] {
+ for widgetIndex in [0, 1, 2] {
   let host = ClockContentView(frame: .zero)
   host.barHeight = 32; host.notchGap = 185
   host.select(ClockPack.builtIn.clocks[1])

@@ -7,9 +7,12 @@ struct WidgetDesign: Codable, Equatable, Sendable {
     let name: String
     let renderer: WidgetRenderer
     let accent: String
+    var provider: UsageProvider? = nil
+    var usageProvider: UsageProvider { provider ?? .codex }
     static let originals = [
         WidgetDesign(id: "date", name: "The Daily One", renderer: .flipDate, accent: "D35C3F"),
-        WidgetDesign(id: "usage", name: "The AI Desk", renderer: .aiUsage, accent: "9BAF84")
+        WidgetDesign(id: "usage", name: "Codex Desk", renderer: .aiUsage, accent: "9BAF84", provider: .codex),
+        WidgetDesign(id: "claude-usage", name: "Claude Desk", renderer: .aiUsage, accent: "9BAF84", provider: .claude)
     ]
 }
 
@@ -36,7 +39,10 @@ enum WidgetViewFactory {
         let view: WidgetSurfaceView
         switch design.renderer {
         case .flipDate: view = DateWidgetView(compact: compact)
-        case .aiUsage: view = UsageWidgetView(compact: compact)
+        case .aiUsage:
+            let usage = UsageWidgetView(compact: compact)
+            usage.provider = design.usageProvider
+            view = usage
         }
         view.displayName = design.name
         let rgb = UInt32(design.accent, radix: 16) ?? 0xD35C3F

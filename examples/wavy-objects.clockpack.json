@@ -25,9 +25,17 @@
     },
     {
       "id": "usage",
-      "name": "Wavy usage desk",
+      "name": "Codex Desk",
       "renderer": "aiUsage",
-      "accent": "C93D33"
+      "accent": "C93D33",
+      "provider": "codex"
+    },
+    {
+      "id": "claude-usage",
+      "name": "Claude Desk",
+      "renderer": "aiUsage",
+      "accent": "C93D33",
+      "provider": "claude"
     }
   ],
   "themes": [

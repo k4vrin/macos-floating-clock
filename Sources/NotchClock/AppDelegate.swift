@@ -132,7 +132,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         widgets.submenu = widgetMenu
         menu.insertItem(widgets, at: 4)
         for (offset, title, selector) in [
-            (5, "Connect / Refresh AI Usage", #selector(refreshUsageNow)),
+            (5, "Connect / Refresh Codex Usage", #selector(refreshUsageNow)),
             (6, "Claude Connection Instructions…", #selector(showClaudeInstructions)),
             (7, "Disconnect Codex Usage", #selector(disconnectCodex))
         ] {
@@ -216,25 +216,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         content.selectWidget(design)
         applyPreferences()
         updateSettings()
-        if design.renderer != .aiUsage { usageClient.cancel() }
+        if design.renderer != .aiUsage || design.usageProvider != .codex { usageClient.cancel() }
+        lastUsageRead = .distantPast
         rebuildClockMenu()
         refresh()
     }
 
     private func refreshUsage(at date: Date, force: Bool = false) {
-        guard widgetDesign(for: selectedWidgetKey)?.renderer == .aiUsage, visible, !sleeping else { return }
+        guard let widget = widgetDesign(for: selectedWidgetKey), widget.renderer == .aiUsage,
+              visible, !sleeping else { return }
+        let provider = widget.usageProvider
         if force || date.timeIntervalSince(lastUsageRead) >= 60 {
             lastUsageRead = date
-            for provider in UsageProvider.allCases {
-                if let snapshot = UsageCache.standard.load(provider) {
-                    usageSnapshots[provider] = snapshot
-                    if provider == .claude { usageStatus[provider] = "Status-line cache" }
-                    else if usageStatus[provider] == nil { usageStatus[provider] = "Cached" }
-                }
+            if let snapshot = UsageCache.standard.load(provider) {
+                usageSnapshots[provider] = snapshot
+                if provider == .claude { usageStatus[provider] = "Status-line cache" }
+                else if usageStatus[provider] == nil { usageStatus[provider] = "Cached" }
             }
             content.applyUsage(usageSnapshots, status: usageStatus)
         }
-        guard codexEnabled, !usageClient.isRunning, force || date.timeIntervalSince(lastCodexRequest) >= 60 else { return }
+        guard provider == .codex, codexEnabled, !usageClient.isRunning, force || date.timeIntervalSince(lastCodexRequest) >= 60 else { return }
         lastCodexRequest = date
         usageStatus[.codex] = "Refreshing"
         content.applyUsage(usageSnapshots, status: usageStatus)
@@ -256,7 +257,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func refreshUsageNow() {
         codexEnabled = true
         UserDefaults.standard.set(true, forKey: "codexUsageEnabled")
-        if widgetDesign(for: selectedWidgetKey)?.renderer != .aiUsage {
+        if widgetDesign(for: selectedWidgetKey)?.renderer != .aiUsage ||
+            widgetDesign(for: selectedWidgetKey)?.usageProvider != .codex {
             selectedWidgetKey = "dev.kavrin.originals/usage"
             UserDefaults.standard.set(selectedWidgetKey, forKey: "selectedWidget")
             content.selectWidget(WidgetDesign.originals[1])

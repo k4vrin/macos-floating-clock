@@ -12,9 +12,17 @@
     },
     {
       "id": "usage",
-      "name": "Sage AI Desk",
+      "name": "Codex Desk",
       "renderer": "aiUsage",
-      "accent": "9BAF84"
+      "accent": "9BAF84",
+      "provider": "codex"
+    },
+    {
+      "id": "claude-usage",
+      "name": "Claude Desk",
+      "renderer": "aiUsage",
+      "accent": "9BAF84",
+      "provider": "claude"
     }
   ]
 }
