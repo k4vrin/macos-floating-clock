@@ -2,6 +2,7 @@ import AppKit
 
 @MainActor
 class NotchItemView: NSView {
+    var visualFamily = VisualFamily.wavy { didSet { needsDisplay = true } }
     var palette = ThemePalette() { didSet { needsDisplay = true } }
     var uses24HourTime = true { didSet { needsDisplay = true } }
     var date = Date() { didSet { needsDisplay = true } }

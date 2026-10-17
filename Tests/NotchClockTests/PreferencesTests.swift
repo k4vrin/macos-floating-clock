@@ -10,6 +10,7 @@ final class PreferencesTests: XCTestCase {
         XCTAssertEqual(settings.display, "built-in")
         XCTAssertTrue(settings.uses24HourTime)
         XCTAssertFalse(settings.startExpanded)
+        settings.visualFamily = .counter
         settings.display = "external-uuid"
         settings.theme = "test.collection/blue"
         settings.uses24HourTime = false
@@ -17,6 +18,25 @@ final class PreferencesTests: XCTestCase {
         settings.startExpanded = true
         settings.save(to: defaults)
         XCTAssertEqual(AppPreferences(defaults: defaults), settings)
+    }
+
+    func testUnknownFamilyPreferenceFallsBackToWavy() {
+        let name = "test.family." + UUID().uuidString
+        let defaults = UserDefaults(suiteName: name)!
+        defer { defaults.removePersistentDomain(forName: name) }
+        defaults.set("unsupported", forKey: "visualFamily")
+        XCTAssertEqual(AppPreferences(defaults: defaults).visualFamily, .wavy)
+    }
+
+    func testThemeFamilyRecommendationIsOptionalAndValidated() throws {
+        var theme = ThemeDesign.originals[0]
+        theme.family = .counter
+        XCTAssertEqual(try JSONDecoder().decode(ThemeDesign.self, from: JSONEncoder().encode(theme)), theme)
+        let encoded = String(data: try JSONEncoder().encode(theme), encoding: .utf8)!
+        XCTAssertThrowsError(try JSONDecoder().decode(ThemeDesign.self,
+            from: Data(encoded.replacingOccurrences(of: "counter", with: "unknown").utf8)))
+        theme.family = nil
+        XCTAssertNil(try JSONDecoder().decode(ThemeDesign.self, from: JSONEncoder().encode(theme)).family)
     }
 
     func testDisplaySelectionAndDisconnectedFallback() {

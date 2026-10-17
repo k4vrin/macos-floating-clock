@@ -2,6 +2,7 @@ import AppKit
 
 struct AppPreferences: Equatable {
     var display = "built-in"
+    var visualFamily = VisualFamily.wavy
     var theme = "dev.kavrin.originals/original"
     var uses24HourTime = true
     var reduceMotion = false
@@ -9,6 +10,7 @@ struct AppPreferences: Equatable {
 
     init(defaults: UserDefaults = .standard) {
         display = defaults.string(forKey: "preferredDisplay") ?? display
+        visualFamily = defaults.string(forKey: "visualFamily").flatMap(VisualFamily.init(rawValue:)) ?? .wavy
         theme = defaults.string(forKey: "selectedTheme") ?? theme
         uses24HourTime = defaults.object(forKey: "uses24HourTime") as? Bool ?? true
         reduceMotion = defaults.bool(forKey: "reduceClockMotion")
@@ -17,6 +19,7 @@ struct AppPreferences: Equatable {
 
     func save(to defaults: UserDefaults = .standard) {
         defaults.set(display, forKey: "preferredDisplay")
+        defaults.set(visualFamily.rawValue, forKey: "visualFamily")
         defaults.set(theme, forKey: "selectedTheme")
         defaults.set(uses24HourTime, forKey: "uses24HourTime")
         defaults.set(reduceMotion, forKey: "reduceClockMotion")
