@@ -7,9 +7,12 @@ struct WidgetDesign: Codable, Equatable, Sendable {
     let name: String
     let renderer: WidgetRenderer
     let accent: String
+    var provider: UsageProvider? = nil
+    var usageProvider: UsageProvider { provider ?? .codex }
     static let originals = [
         WidgetDesign(id: "date", name: "The Daily One", renderer: .flipDate, accent: "D35C3F"),
-        WidgetDesign(id: "usage", name: "The AI Desk", renderer: .aiUsage, accent: "9BAF84")
+        WidgetDesign(id: "usage", name: "Codex Desk", renderer: .aiUsage, accent: "9BAF84", provider: .codex),
+        WidgetDesign(id: "claude-usage", name: "Claude Desk", renderer: .aiUsage, accent: "9BAF84", provider: .claude)
     ]
 }
 
@@ -27,6 +30,13 @@ class WidgetSurfaceView: NotchItemView {
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
+    // Keep the right-side objects on the digital clock's horizontal capsule baseline.
+    var housingBody: NSRect {
+        mix(bounds.insetBy(dx: 0.5, dy: 0.5),
+            NSRect(x: 5, y: bounds.height * 0.21, width: bounds.width - 10, height: bounds.height * 0.60),
+            expansionProgress)
+    }
+
     func updateAccessibility() { }
 }
 
@@ -36,7 +46,10 @@ enum WidgetViewFactory {
         let view: WidgetSurfaceView
         switch design.renderer {
         case .flipDate: view = DateWidgetView(compact: compact)
-        case .aiUsage: view = UsageWidgetView(compact: compact)
+        case .aiUsage:
+            let usage = UsageWidgetView(compact: compact)
+            usage.provider = design.usageProvider
+            view = usage
         }
         view.displayName = design.name
         let rgb = UInt32(design.accent, radix: 16) ?? 0xD35C3F

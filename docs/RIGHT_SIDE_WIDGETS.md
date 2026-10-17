@@ -102,3 +102,21 @@ A 72-second release-app run with the digital clock and AI widget recorded the fo
 The Codex helper and its descendants were sampled separately every approximately 250 ms. Their combined RSS briefly peaked at 125.2 MiB, with up to four helper processes observed. No helper remained in the final sample. These helpers are outside the host CPU/footprint figures above, so those figures are not total-system cost. Helper CPU was not measured. The short run does not establish battery life or long-run memory stability. Raw samples and screenshots are ignored under `output/` and remain outside the vault.
 
 The widget-only Desk Widgets example was also installed through the native file picker. Its Blue Calendar appeared under Right-side Widgets, applied its accent in compact mode, and left the selected clock unchanged. Both built-in widgets were then checked beside the analog clock. The app was left showing the AI desk with real Codex readings and an unconnected Claude state.
+
+## Provider-specific desks
+
+Choose **Codex Desk** or **Claude Desk** from **Settings → Right side** or the **Right-side Widgets** menu. A desk shows only its selected provider. Both compact and expanded layouts have side-by-side 5H and WEEK slots; the expanded percentages are the dominant text, with smaller window labels, reset times, and connection/freshness details. Existing hover morphing and theme recipes apply to both desks.
+
+The two slots match 300-minute and 10,080-minute windows exactly. Missing and expired windows show `--` rather than substituting another window or provider. The accessibility description and tooltip identify the selected provider, unavailable slots, stale data, and reset times.
+
+Pack widget entries may specify `"provider": "codex"` or `"provider": "claude"` alongside `"renderer": "aiUsage"`. Legacy entries without a provider default to Codex. The existing built-in `usage` ID is retained as Codex Desk so saved selections remain valid. Claude Desk uses `claude-usage`.
+
+Selecting Claude Desk reads its status-line cache and cancels any in-flight Codex request. It does not start Codex refreshes. **Connect / Refresh Codex Usage** explicitly switches to Codex Desk. Claude still needs its existing status-line capture setup; selecting the widget does not connect a provider automatically.
+
+Provider desk previews below use synthetic sample data.
+
+![Codex desk with five-hour and weekly limits](previews/wavy-usage-expanded.png)
+
+![Claude desk with five-hour and weekly limits](previews/claude-usage-expanded.png)
+
+The expanded calendar and provider desks use horizontal capsules aligned to the digital clock housing. The excess vertical housing is removed; the calendar date stays centered, and usage percentages share one row with smaller reset details underneath. Both widgets retain the same compact geometry and hover morph.
