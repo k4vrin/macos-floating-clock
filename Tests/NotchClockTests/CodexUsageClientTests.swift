@@ -16,7 +16,7 @@ final class CodexUsageClientTests: XCTestCase {
         printf '%s\\n' '{"id":1,"result":{}}'
         read initialized
         read limits
-        printf '%s\\n' '{"id":2,"result":{"rateLimits":{"limitId":"codex","primary":{"usedPercent":12,"windowDurationMins":300}}}}'
+        printf '%s\\n' '{"id":2,"result":{"rateLimitResetCredits":{"availableCount":3},"rateLimits":{"limitId":"codex","primary":{"usedPercent":12,"windowDurationMins":300}}}}'
         read closed
         """)
         defer { try? FileManager.default.removeItem(at: file) }
@@ -25,6 +25,7 @@ final class CodexUsageClientTests: XCTestCase {
             client.fetch { continuation.resume(returning: $0) }
         }
         XCTAssertEqual(try result.get().windows.first?.usedPercent, 12)
+        XCTAssertEqual(try result.get().bankedResetCount, 3)
         XCTAssertFalse(client.isRunning)
     }
 

@@ -21,7 +21,8 @@ final class UsageWidgetView: WidgetSurfaceView {
             let reset = window.resetDescription(at: date).map { ", resets in " + $0 } ?? ""
             return "\(title), \(Int(window.usedPercent)) percent used" + reset
         }.joined(separator: ". ")
-        let summary = "\(provider.title) subscription usage. \(state). \(windows)"
+        let resets = provider == .codex ? snapshot?.bankedResetCount.map { ". \($0) banked resets" } ?? ". Banked resets unavailable" : ""
+        let summary = "\(provider.title) subscription usage. \(state). \(windows)" + resets
         setAccessibilityLabel(summary)
         toolTip = summary
     }
@@ -38,6 +39,11 @@ final class UsageWidgetView: WidgetSurfaceView {
         drawText(provider.title.uppercased(),
                  at: NSRect(x: dial.minX, y: dial.minY + mix(0, 10, p), width: dial.width, height: mix(6, 13, p)),
                  font: .systemFont(ofSize: mix(4.5, 9, p), weight: .semibold), color: palette.ink)
+        if provider == .codex {
+            let stars = mix(NSRect(x: dial.midX - 12, y: dial.minY + 6, width: 24, height: 5),
+                            NSRect(x: dial.midX - 40, y: dial.minY + 26, width: 80, height: 11), p)
+            drawBankedStars(in: stars, fontSize: mix(3, 8, p))
+        }
         let snapshot = snapshots[provider]
         for (index, window) in windowRows.enumerated() {
             let valid = window.map { !$0.isExpired(at: date) } ?? false
@@ -74,6 +80,20 @@ final class UsageWidgetView: WidgetSurfaceView {
         drawText(status, at: NSRect(x: dial.minX, y: dial.maxY - 17, width: dial.width, height: 9),
                  font: .systemFont(ofSize: 5.5, weight: .medium), color: palette.ink.withAlphaComponent(details))
     }
+    var bankedStarsText: String? {
+        guard provider == .codex, let count = snapshots[.codex]?.bankedResetCount else { return nil }
+        guard count > 0 else { return "☆" }
+        let stars = String(repeating: "★", count: min(count, 6))
+        return count > 6 ? stars + " +\(count - 6)" : stars
+    }
+
+    private func drawBankedStars(in rect: NSRect, fontSize: CGFloat) {
+        guard let text = bankedStarsText else { return }
+        let snapshot = snapshots[.codex]
+        let alpha: CGFloat = snapshot?.bankedResetCount == 0 ? 0.3 : snapshot?.isStale(at: date) == true ? 0.5 : 1
+        drawText(text, at: rect, font: .systemFont(ofSize: fontSize, weight: .medium), color: accent.withAlphaComponent(alpha))
+    }
+
     private func drawPaperUsage(in dial: NSRect) {
         let p = expansionProgress
         let column = dial.width / 3
@@ -81,9 +101,14 @@ final class UsageWidgetView: WidgetSurfaceView {
                  at: NSRect(x: dial.minX + 2, y: dial.midY - mix(4, 10, p), width: column - 4, height: mix(9, 22, p)),
                  font: .systemFont(ofSize: mix(5, 15, p), weight: .semibold), color: palette.ink)
         let dot = mix(2, 6, p)
-        accent.setFill()
-        NSBezierPath(ovalIn: NSRect(x: dial.minX + column / 2 - dot / 2,
-                                    y: dial.midY + mix(6, 23, p), width: dot, height: dot)).fill()
+        if provider == .codex {
+            drawBankedStars(in: NSRect(x: dial.minX + 2, y: dial.midY + mix(5, 21, p),
+                                       width: column - 4, height: mix(6, 13, p)), fontSize: mix(3.5, 9, p))
+        } else {
+            accent.setFill()
+            NSBezierPath(ovalIn: NSRect(x: dial.minX + column / 2 - dot / 2,
+                                       y: dial.midY + mix(6, 23, p), width: dot, height: dot)).fill()
+        }
         for (index, window) in windowRows.enumerated() {
             let x = dial.minX + CGFloat(index + 1) * column
             palette.ink.withAlphaComponent(0.45).setFill()
