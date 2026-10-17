@@ -39,6 +39,27 @@ final class PreferencesTests: XCTestCase {
         XCTAssertNil(try JSONDecoder().decode(ThemeDesign.self, from: JSONEncoder().encode(theme)).family)
     }
 
+    @MainActor
+    func testPaperCutComponentColorsSurviveWidgetReplacementAndPackRoundTrip() throws {
+        let theme = try XCTUnwrap(ThemeDesign.originals.first { $0.id == "paper-cut" })
+        let pack = ClockPack(schemaVersion: 1, id: "test.paper", name: "Paper", clocks: [], widgets: nil, themes: [theme])
+        XCTAssertEqual(try ClockPack.decode(JSONEncoder().encode(pack)), pack)
+        let host = ClockContentView(frame: .zero)
+        host.applyTheme(theme)
+        let calendar = try XCTUnwrap(host.subviews.compactMap { $0 as? DateWidgetView }.first)
+        XCTAssertEqual(calendar.palette.surface, ThemePalette.color("F1C34F"))
+        host.selectWidget(WidgetDesign.originals[1])
+        let usage = try XCTUnwrap(host.subviews.compactMap { $0 as? UsageWidgetView }.first)
+        XCTAssertEqual(usage.palette.surface, ThemePalette.color("164865"))
+        XCTAssertTrue(usage.palette.isPaperCut)
+        host.applyTheme(ThemeDesign.originals[0])
+        XCTAssertFalse(usage.palette.isPaperCut)
+        XCTAssertEqual(usage.palette.surface, ThemePalette().surface)
+        let encoded = try JSONEncoder().encode(pack)
+        let invalid = String(decoding: encoded, as: UTF8.self).replacingOccurrences(of: "F1C34F", with: "invalid")
+        XCTAssertThrowsError(try ClockPack.decode(Data(invalid.utf8)))
+    }
+
     func testDisplaySelectionAndDisconnectedFallback() {
         let choices = [DisplayChoice(id: "external", name: "Desk", builtIn: false),
                        DisplayChoice(id: "laptop", name: "Laptop", builtIn: true)]

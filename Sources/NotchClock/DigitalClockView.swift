@@ -20,7 +20,7 @@ final class DigitalClockView: NotchItemView {
         let dial = drawThemeHousing(in: body, palette: palette, accent: accent, progress: p)
         let area = dial.insetBy(dx: mix(3, 14, p), dy: mix(2, 32, p))
         drawThemeNumber(formatter.string(from: date), in: area, family: visualFamily, palette: palette)
-        drawText(visualFamily == .wavy ? "WAVY / LOCAL" : "COUNTER / LOCAL",
+        drawText(palette.isPaperCut ? "PAPER / LOCAL" : (visualFamily == .wavy ? "WAVY / LOCAL" : "COUNTER / LOCAL"),
                  at: NSRect(x: dial.minX, y: dial.minY + 13, width: dial.width, height: 14),
                  font: .systemFont(ofSize: 9, weight: .semibold), color: palette.ink.withAlphaComponent(max(0, (p - 0.65) / 0.35)))
     }

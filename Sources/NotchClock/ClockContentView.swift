@@ -86,7 +86,7 @@ final class ClockContentView: NSView {
         // Every component uses the theme's same housing accent; widget data never picks its own style.
         for view in [clock, widget] {
             view.visualFamily = visualFamily
-            view.palette = palette
+            view.palette = view === widget ? ThemePalette(theme, component: widgetDesign.renderer == .flipDate ? .calendar : .usage) : palette
             view.uses24HourTime = uses24HourTime
             view.accent = accent
         }

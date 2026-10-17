@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "dev.kavrin.paper-cut",
+  "name": "Paper Cut",
+  "clocks": [],
+  "themes": [
+    {
+      "id": "paper-cut",
+      "name": "Paper Cut",
+      "shell": "EAE0CE",
+      "surface": "BC5938",
+      "ink": "FFF1D4",
+      "text": "453D32",
+      "muted": "8C7963",
+      "clockAccent": "EBAE32",
+      "widgetAccent": "EBAE32",
+      "family": "wavy",
+      "material": "paperCut",
+      "calendarColors": {
+        "surface": "F1C34F",
+        "ink": "164865"
+      },
+      "usageColors": {
+        "surface": "164865",
+        "ink": "FFF1D4"
+      }
+    }
+  ]
+}
