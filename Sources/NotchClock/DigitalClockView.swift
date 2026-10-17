@@ -33,6 +33,15 @@ final class DigitalClockView: NotchItemView {
         let dial = bezel.insetBy(dx: compact ? 0.8 : 3, dy: compact ? 0.8 : 3)
         NSGradient(starting: palette.highlight, ending: palette.surface)?
             .draw(in: NSBezierPath(roundedRect: dial, xRadius: dial.height / 2, yRadius: dial.height / 2), angle: 90)
+        if visualFamily == .wavy {
+            let text = String(digits.prefix(2)) + ":" + String(digits.suffix(2))
+            drawWavyNumerals(text, in: dial.insetBy(dx: compact ? 4 : 14, dy: compact ? 2 : 32), color: palette.ink)
+            if !compact {
+                drawText("WAVY / LOCAL", at: NSRect(x: dial.minX + 18, y: dial.minY + 16, width: dial.width - 36, height: 14),
+                         font: .systemFont(ofSize: 9, weight: .semibold), color: palette.ink)
+            }
+            return
+        }
         let area = dial.insetBy(dx: compact ? 6 : 16, dy: compact ? 3 : 37)
         let cell = area.width / 4.6
         for (index, digit) in digits.enumerated() {
