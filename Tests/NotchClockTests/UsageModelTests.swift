@@ -11,6 +11,24 @@ final class UsageModelTests: XCTestCase {
         XCTAssertTrue(try UsageSnapshot.codex(result: other).windows.isEmpty)
     }
 
+    func testBankedResetCountUsesSummaryAndPreservesUnknownAndZero() throws {
+        for (raw, expected) in [("3", 3), ("0", 0), ("-1", nil), ("1.5", nil), ("true", nil), ("\"3\"", nil), ("null", nil)] as [(String, Int?)] {
+            let data = Data("{\"rateLimitResetCredits\":{\"availableCount\":\(raw),\"credits\":[]}}".utf8)
+            XCTAssertEqual(try UsageSnapshot.codex(result: data).bankedResetCount, expected)
+        }
+        XCTAssertNil(try UsageSnapshot.codex(result: Data("{}".utf8)).bankedResetCount)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let cache = UsageCache(directory: directory)
+        let snapshot = UsageSnapshot(provider: .codex, observedAt: Date(), windows: [], bankedResetCount: 4)
+        try cache.save(snapshot)
+        XCTAssertEqual(cache.load(.codex)?.bankedResetCount, 4)
+        let legacy = Data("{\"provider\":\"codex\",\"observedAt\":0,\"windows\":[]}".utf8)
+        XCTAssertNil(try JSONDecoder().decode(UsageSnapshot.self, from: legacy).bankedResetCount)
+        try cache.save(UsageSnapshot(provider: .codex, observedAt: Date(), windows: [], bankedResetCount: -1))
+        XCTAssertNil(cache.load(.codex))
+    }
+
     func testClaudeMissingWindowsAreUnknownAndInvalidValuesAreRejected() throws {
         XCTAssertTrue(try UsageSnapshot.claude(statusLine: Data("{}".utf8)).windows.isEmpty)
         let data = Data(#"{"rate_limits":{"five_hour":{"used_percentage":100,"resets_at":2000000000},"seven_day":{"used_percentage":-1}},"cost":{"total_cost_usd":999},"context_window":{"used_percentage":88}}"#.utf8)

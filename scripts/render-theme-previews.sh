@@ -25,7 +25,7 @@ for family in VisualFamily.allCases {
   for (i, provider) in UsageProvider.allCases.enumerated() {
    samples[provider] = UsageSnapshot(provider: provider, observedAt: date,
       windows: [UsageWindow(usedPercent: i == 0 ? 42 : 68, durationMinutes: 300, resetsAt: date.addingTimeInterval(7200)),
-                UsageWindow(usedPercent: 25, durationMinutes: 10080, resetsAt: date.addingTimeInterval(86400))])
+                UsageWindow(usedPercent: 25, durationMinutes: 10080, resetsAt: date.addingTimeInterval(86400))], bankedResetCount: provider == .codex ? 3 : nil)
   }
   host.applyUsage(samples, status: [:])
   host.update(date: date)

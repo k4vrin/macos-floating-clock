@@ -56,7 +56,7 @@ final class CodexUsageClient {
         }
         do {
             try task.run()
-            try send(["id": 1, "method": "initialize", "params": ["clientInfo": ["name": "wavy_clock", "version": "0.1.0"]]])
+            try send(["id": 1, "method": "initialize", "params": ["clientInfo": ["name": "wavy_clock", "version": "0.1.0"], "capabilities": ["experimentalApi": true]]])
             timeout = Task { [weak self] in
                 do { try await Task.sleep(for: self?.requestTimeout ?? .seconds(12)) } catch { return }
                 self?.finish(.failure(UsageError.invalid("Codex usage request timed out. Try again when connected.")))

@@ -32,6 +32,7 @@ struct UsageSnapshot: Codable, Equatable, Sendable {
     let provider: UsageProvider
     let observedAt: Date
     let windows: [UsageWindow]
+    var bankedResetCount: Int? = nil
 
     var displayWindows: [UsageWindow?] {
         [windows.first(where: { $0.durationMinutes < 1440 }), windows.first(where: { $0.durationMinutes >= 1440 })]
@@ -54,7 +55,10 @@ struct UsageSnapshot: Codable, Equatable, Sendable {
             guard let window = bucket?[key] as? [String: Any] else { return nil }
             return parseWindow(window, percentKey: "usedPercent", duration: window["windowDurationMins"] as? Int)
         }
-        return UsageSnapshot(provider: .codex, observedAt: observedAt, windows: windows)
+        // The backend may cap credit detail rows; availableCount is the authoritative total.
+        let reported = (try? JSONDecoder().decode(CodexResetSummary.self, from: result))?.rateLimitResetCredits?.availableCount
+        let count = reported.flatMap { $0 >= 0 ? $0 : nil }
+        return UsageSnapshot(provider: .codex, observedAt: observedAt, windows: windows, bankedResetCount: count)
     }
 
     static func claude(statusLine: Data, observedAt: Date = Date()) throws -> UsageSnapshot {
@@ -66,6 +70,11 @@ struct UsageSnapshot: Codable, Equatable, Sendable {
             return parseWindow(window, percentKey: "used_percentage", duration: duration, resetKey: "resets_at")
         }
         return UsageSnapshot(provider: .claude, observedAt: observedAt, windows: windows)
+    }
+
+    private struct CodexResetSummary: Decodable {
+        struct Credits: Decodable { let availableCount: Int }
+        let rateLimitResetCredits: Credits?
     }
 
     private static func parseWindow(_ value: [String: Any], percentKey: String, duration: Int?, resetKey: String = "resetsAt") -> UsageWindow? {
@@ -96,6 +105,7 @@ struct UsageCache: Sendable {
         guard let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= 16_384,
               let data = try? Data(contentsOf: file), let snapshot = try? JSONDecoder().decode(UsageSnapshot.self, from: data),
               snapshot.provider == provider, snapshot.windows.count <= 2,
+              snapshot.bankedResetCount.map({ $0 >= 0 && provider == .codex }) ?? true,
               snapshot.windows.allSatisfy({ $0.usedPercent.isFinite && (0...100).contains($0.usedPercent) && (1...525600).contains($0.durationMinutes) }) else { return nil }
         return snapshot
     }

@@ -120,3 +120,9 @@ Provider desk previews below use synthetic sample data.
 ![Claude desk with five-hour and weekly limits](previews/claude-usage-expanded.png)
 
 The expanded calendar and provider desks use horizontal capsules aligned to the digital clock housing. The excess vertical housing is removed; the calendar date stays centered, and usage percentages share one row with smaller reset details underneath. Both widgets retain the same compact geometry and hover morph.
+
+## Codex banked reset stars
+
+Codex Desk shows small gold stars under the provider name in compact and expanded layouts. Each filled star represents one banked reset reported by `account/rateLimits/read` at `rateLimitResetCredits.availableCount`. A faint outline indicates a known zero; unavailable counts show no stars and are identified in the tooltip and accessibility description. Stale cached stars are dimmed. Up to six stars fit in the row, with a `+N` overflow label for additional resets and the exact total in the accessible description. Claude does not show this indicator.
+
+The count is cached alongside usage windows; old caches without it remain valid. The client opts into experimental app-server fields for this optional summary. It uses the backend total rather than counting credit details, which may be capped. The app does not redeem reset credits or add requests or polling timers. The Paper Cut previews use three synthetic banked resets.

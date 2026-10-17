@@ -30,6 +30,24 @@ final class ProviderDeskTests: XCTestCase {
         XCTAssertFalse(view.accessibilityLabel()?.contains("12 percent used") == true)
     }
 
+    func testBankedStarsAreCodexOnlyAndOverflowRetainsExactCount() {
+        let view = UsageWidgetView(compact: true)
+        let now = Date()
+        for (count, text) in [(0, "☆"), (3, "★★★"), (8, "★★★★★★ +2")] {
+            view.snapshots = [.codex: UsageSnapshot(provider: .codex, observedAt: now, windows: [], bankedResetCount: count)]
+            view.updateAccessibility()
+            XCTAssertEqual(view.bankedStarsText, text)
+            XCTAssertTrue(view.accessibilityLabel()?.contains("\(count) banked resets") == true)
+        }
+        view.provider = .claude
+        XCTAssertNil(view.bankedStarsText)
+        XCTAssertFalse(view.accessibilityLabel()?.contains("banked resets") == true)
+        view.snapshots = [:]
+        view.provider = .codex
+        XCTAssertNil(view.bankedStarsText)
+        XCTAssertTrue(view.accessibilityLabel()?.contains("Banked resets unavailable") == true)
+    }
+
     func testPackProviderSelectionAndLegacyDefault() throws {
         let legacy = Data(#"{"schemaVersion":1,"id":"test.desks","name":"Desks","clocks":[],"widgets":[{"id":"usage","name":"Usage","renderer":"aiUsage","accent":"C93D33"}]}"#.utf8)
         let design = try XCTUnwrap(ClockPack.decode(legacy).widgets?.first)
