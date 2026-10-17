@@ -79,11 +79,6 @@ private enum PaperGrain {
 }
 
 @MainActor
-func paperBody(in bounds: NSRect, progress: CGFloat) -> NSRect {
-    bounds.insetBy(dx: mix(0.5, 4, progress), dy: mix(0.5, 8, progress))
-}
-
-@MainActor
 func drawPaperFrame(in body: NSRect, progress: CGFloat) {
     let radius = body.height * 0.28
     NSGraphicsContext.saveGraphicsState()
@@ -108,7 +103,7 @@ func drawPaperFrame(in body: NSRect, progress: CGFloat) {
 @MainActor
 func drawPaperHousing(in body: NSRect, palette: ThemePalette, progress: CGFloat, sharedFrame: Bool = false) -> NSRect {
     if !sharedFrame { drawPaperFrame(in: body, progress: progress) }
-    let dial = body.insetBy(dx: mix(2.5, 6, progress), dy: mix(2.5, 6, progress))
+    let dial = sharedFrame ? body : body.insetBy(dx: mix(2.5, 6, progress), dy: mix(2.5, 6, progress))
     let radius = dial.height * 0.25
     let path = NSBezierPath(roundedRect: dial, xRadius: radius, yRadius: radius)
     let highlight = palette.surface.blended(withFraction: 0.04, of: .white) ?? palette.surface

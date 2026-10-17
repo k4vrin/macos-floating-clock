@@ -15,7 +15,7 @@ final class ThemeSampleView: NSView {
         NSBezierPath(roundedRect: bounds, xRadius: 12, yRadius: 12).fill()
         if palette.isPaperCut {
             let dial = drawThemeHousing(in: NSRect(x: 16, y: 13, width: 98, height: 46),
-                                        palette: palette, accent: palette.clockAccent, progress: 1)
+                                        palette: palette, accent: palette.clockAccent, progress: 1, sharedFrame: true)
             drawThemeNumber("10:10", in: dial.insetBy(dx: 6, dy: 8), family: .wavy, palette: palette)
         } else {
             palette.clockAccent.setFill()

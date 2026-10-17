@@ -34,8 +34,8 @@ struct ThemeDesign: Codable, Equatable, Sendable {
                     text: "F0E1D0", muted: "C3A8BB", clockAccent: "88516E", widgetAccent: "956742"),
         ThemeDesign(id: "counter", name: "Counter objects", shell: "182124", surface: "EFE5CA", ink: "20292B",
                     text: "EFE5CA", muted: "A6AAA3", clockAccent: "C48B36", widgetAccent: "C48B36", family: .counter),
-        ThemeDesign(id: "paper-cut", name: "Paper Cut", shell: "EAE0CE", surface: "BC5938", ink: "FFF1D4",
-                    text: "453D32", muted: "8C7963", clockAccent: "EBAE32", widgetAccent: "EBAE32", family: .wavy,
+        ThemeDesign(id: "paper-cut", name: "Paper Cut", shell: "000000", surface: "BC5938", ink: "FFF1D4",
+                    text: "FFF1D4", muted: "B8A58B", clockAccent: "EBAE32", widgetAccent: "EBAE32", family: .wavy,
                     material: .paperCut, calendarColors: ComponentColors(surface: "F1C34F", ink: "164865"),
                     usageColors: ComponentColors(surface: "164865", ink: "FFF1D4"))
     ]

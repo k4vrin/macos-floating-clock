@@ -17,7 +17,7 @@ final class CompactClockView: NotchItemView {
     override func draw(_ dirtyRect: NSRect) {
         guard let context = NSGraphicsContext.current?.cgContext else { return }
         let p = expansionProgress
-        let housing = palette.isPaperCut ? paperBody(in: bounds, progress: p) : bounds.insetBy(dx: mix(0.5, 6, p), dy: mix(0.5, 6, p))
+        let housing = palette.isPaperCut ? bounds : bounds.insetBy(dx: mix(0.5, 6, p), dy: mix(0.5, 6, p))
         guard housing.height > 4 else { return }
         let dial: NSRect
         let dialPath: NSBezierPath

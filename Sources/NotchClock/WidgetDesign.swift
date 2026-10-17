@@ -32,7 +32,7 @@ class WidgetSurfaceView: NotchItemView {
 
     // Keep the right-side objects on the digital clock's horizontal capsule baseline.
     var housingBody: NSRect {
-        if palette.isPaperCut { return paperBody(in: bounds, progress: expansionProgress) }
+        if palette.isPaperCut { return bounds }
         return mix(bounds.insetBy(dx: 0.5, dy: 0.5),
             NSRect(x: 5, y: bounds.height * 0.21, width: bounds.width - 10, height: bounds.height * 0.60),
             expansionProgress)

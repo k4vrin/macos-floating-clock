@@ -128,8 +128,9 @@ final class ClockContentView: NSView {
         let right = NSRect(x: bounds.midX + notchGap / 2 + 2, y: 0, width: 108, height: barHeight)
         let scale = min(1, bounds.width / 640)
         if palette.isPaperCut {
-            clock.frame = mix(left, NSRect(x: 8 * scale, y: barHeight, width: 310 * scale, height: 192), progress)
-            widget.frame = mix(right, NSRect(x: 322 * scale, y: barHeight, width: 310 * scale, height: 192), progress)
+            let compactRight = NSRect(x: bounds.midX + notchGap / 2, y: 0, width: 110, height: barHeight)
+            clock.frame = mix(left, NSRect(x: 0, y: barHeight, width: bounds.width / 2 - 1, height: 192), progress)
+            widget.frame = mix(compactRight, NSRect(x: bounds.midX + 1, y: barHeight, width: bounds.width / 2 - 1, height: 192), progress)
             return
         }
         clock.frame = mix(left, NSRect(x: 32 * scale, y: barHeight + 42,
@@ -149,21 +150,23 @@ final class ClockContentView: NSView {
         if point.y < barHeight && abs(point.x - bounds.midX) < notchGap / 2 { return false }
         if palette.isPaperCut {
             let frame = paperFrame
-            return NSBezierPath(roundedRect: frame, xRadius: frame.height * 0.28, yRadius: frame.height * 0.28).contains(point)
+            return NSBezierPath(roundedRect: frame, xRadius: mix(barHeight / 4, 24, progress), yRadius: mix(barHeight / 4, 24, progress)).contains(point)
         }
         return bounds.contains(point)
     }
 
     override func draw(_ dirtyRect: NSRect) {
         if palette.isPaperCut {
-            drawPaperFrame(in: paperFrame, progress: progress)
+            NSColor.black.setFill()
+            let frame = paperFrame
+            NSBezierPath(roundedRect: frame, xRadius: mix(barHeight / 4, 24, progress), yRadius: mix(barHeight / 4, 24, progress)).fill()
             return
         }
         let radius = min(mix(barHeight / 2, 26, progress), bounds.height / 2)
         // Grow the shell from the notch bridge while the two objects move out into the desk.
         let shell = NSRect(x: mix(bounds.midX - notchGap / 2, 0, progress), y: 0,
                            width: mix(notchGap + 112, bounds.width, progress), height: bounds.height)
-        palette.shell.setFill()
+        NSColor.black.setFill()
         NSBezierPath(roundedRect: shell, xRadius: radius, yRadius: radius).fill()
         NSRect(x: shell.minX, y: 0, width: shell.width, height: min(barHeight, shell.height)).fill()
         drawText("OBJECTS OF TIME", at: NSRect(x: 32, y: barHeight + 14, width: 170, height: 15),
