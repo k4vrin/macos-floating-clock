@@ -50,7 +50,7 @@ final class ClockContentView: NSView {
 
     override func hitTest(_ point: NSPoint) -> NSView? {
         // The camera cutout is never an interactive part of the bar, even during motion.
-        if point.y < barHeight && abs(point.x - bounds.midX) < notchGap / 2 { return nil }
+        if !containsInteractionPoint(point) { return nil }
         return super.hitTest(point)
     }
 
@@ -85,11 +85,13 @@ final class ClockContentView: NSView {
         let accent = theme.usesDesignAccents == true ? ThemePalette.color(design.accent) : palette.clockAccent
         // Every component uses the theme's same housing accent; widget data never picks its own style.
         for view in [clock, widget] {
+            view.sharesPaperFrame = palette.isPaperCut
             view.visualFamily = visualFamily
-            view.palette = palette
+            view.palette = view === widget ? ThemePalette(theme, component: widgetDesign.renderer == .flipDate ? .calendar : .usage) : palette
             view.uses24HourTime = uses24HourTime
             view.accent = accent
         }
+        needsLayout = true
         needsDisplay = true
     }
     func configureFormatters() {
@@ -125,17 +127,46 @@ final class ClockContentView: NSView {
         let left = NSRect(x: bounds.midX - notchGap / 2 - 84, y: 0, width: 84, height: barHeight)
         let right = NSRect(x: bounds.midX + notchGap / 2 + 2, y: 0, width: 108, height: barHeight)
         let scale = min(1, bounds.width / 640)
+        if palette.isPaperCut {
+            let compactRight = NSRect(x: bounds.midX + notchGap / 2, y: 0, width: 110, height: barHeight)
+            clock.frame = mix(left, NSRect(x: 0, y: barHeight, width: bounds.width / 2 - 1, height: 192), progress)
+            widget.frame = mix(compactRight, NSRect(x: bounds.midX + 1, y: barHeight, width: bounds.width / 2 - 1, height: 192), progress)
+            return
+        }
         clock.frame = mix(left, NSRect(x: 32 * scale, y: barHeight + 42,
                                       width: 292 * scale, height: 292), progress)
         widget.frame = mix(right, NSRect(x: 326 * scale, y: barHeight + 42,
                                         width: 282 * scale, height: 292), progress)
     }
+    var expandedHeight: CGFloat? { palette.isPaperCut ? barHeight + 192 : nil }
+
+    var paperFrame: NSRect {
+        let compact = NSRect(x: bounds.midX - notchGap / 2 - 84, y: 0,
+                             width: notchGap + 194, height: barHeight)
+        return mix(compact, NSRect(x: 0, y: 0, width: bounds.width, height: barHeight + 192), progress)
+    }
+
+    func containsInteractionPoint(_ point: NSPoint) -> Bool {
+        if point.y < barHeight && abs(point.x - bounds.midX) < notchGap / 2 { return false }
+        if palette.isPaperCut {
+            let frame = paperFrame
+            return NSBezierPath(roundedRect: frame, xRadius: mix(barHeight / 4, 24, progress), yRadius: mix(barHeight / 4, 24, progress)).contains(point)
+        }
+        return bounds.contains(point)
+    }
+
     override func draw(_ dirtyRect: NSRect) {
+        if palette.isPaperCut {
+            NSColor.black.setFill()
+            let frame = paperFrame
+            NSBezierPath(roundedRect: frame, xRadius: mix(barHeight / 4, 24, progress), yRadius: mix(barHeight / 4, 24, progress)).fill()
+            return
+        }
         let radius = min(mix(barHeight / 2, 26, progress), bounds.height / 2)
         // Grow the shell from the notch bridge while the two objects move out into the desk.
         let shell = NSRect(x: mix(bounds.midX - notchGap / 2, 0, progress), y: 0,
                            width: mix(notchGap + 112, bounds.width, progress), height: bounds.height)
-        palette.shell.setFill()
+        NSColor.black.setFill()
         NSBezierPath(roundedRect: shell, xRadius: radius, yRadius: radius).fill()
         NSRect(x: shell.minX, y: 0, width: shell.width, height: min(barHeight, shell.height)).fill()
         drawText("OBJECTS OF TIME", at: NSRect(x: 32, y: barHeight + 14, width: 170, height: 15),

@@ -1,5 +1,13 @@
 import AppKit
 
+enum ThemeMaterial: String, Codable, Sendable { case paperCut }
+enum ThemeComponent { case clock, calendar, usage }
+
+struct ComponentColors: Codable, Equatable, Sendable {
+    let surface: String
+    let ink: String
+}
+
 /// Palettes are data-only plugins. They reuse native renderers and never load executable code.
 struct ThemeDesign: Codable, Equatable, Sendable {
     let id: String
@@ -13,6 +21,9 @@ struct ThemeDesign: Codable, Equatable, Sendable {
     let widgetAccent: String
     var usesDesignAccents: Bool? = nil
     var family: VisualFamily? = nil
+    var material: ThemeMaterial? = nil
+    var calendarColors: ComponentColors? = nil
+    var usageColors: ComponentColors? = nil
 
     static let originals = [
         ThemeDesign(id: "original", name: "Original objects", shell: "0E0F0E", surface: "F0E6C4", ink: "1F211F",
@@ -22,11 +33,16 @@ struct ThemeDesign: Codable, Equatable, Sendable {
         ThemeDesign(id: "plum", name: "Plum & brass", shell: "302332", surface: "F0E1D0", ink: "3D293E",
                     text: "F0E1D0", muted: "C3A8BB", clockAccent: "88516E", widgetAccent: "956742"),
         ThemeDesign(id: "counter", name: "Counter objects", shell: "182124", surface: "EFE5CA", ink: "20292B",
-                    text: "EFE5CA", muted: "A6AAA3", clockAccent: "C48B36", widgetAccent: "C48B36", family: .counter)
+                    text: "EFE5CA", muted: "A6AAA3", clockAccent: "C48B36", widgetAccent: "C48B36", family: .counter),
+        ThemeDesign(id: "paper-cut", name: "Paper Cut", shell: "000000", surface: "BC5938", ink: "FFF1D4",
+                    text: "FFF1D4", muted: "B8A58B", clockAccent: "EBAE32", widgetAccent: "EBAE32", family: .wavy,
+                    material: .paperCut, calendarColors: ComponentColors(surface: "F1C34F", ink: "164865"),
+                    usageColors: ComponentColors(surface: "164865", ink: "FFF1D4"))
     ]
 
     var hasValidColors: Bool {
-        [shell, surface, ink, text, muted, clockAccent, widgetAccent].allSatisfy {
+        let componentColors = [calendarColors, usageColors].compactMap { $0 }.flatMap { [$0.surface, $0.ink] }
+        return ([shell, surface, ink, text, muted, clockAccent, widgetAccent] + componentColors).allSatisfy {
             $0.range(of: "^[A-Fa-f0-9]{6}$", options: .regularExpression) != nil
         }
     }
@@ -35,10 +51,22 @@ struct ThemeDesign: Codable, Equatable, Sendable {
 @MainActor
 struct ThemePalette {
     let design: ThemeDesign
-    init(_ design: ThemeDesign = ThemeDesign.originals[0]) { self.design = design }
+    private let component: ThemeComponent
+    init(_ design: ThemeDesign = ThemeDesign.originals[0], component: ThemeComponent = .clock) {
+        self.design = design
+        self.component = component
+    }
+    private var componentColors: ComponentColors? {
+        switch component {
+        case .clock: nil
+        case .calendar: design.calendarColors
+        case .usage: design.usageColors
+        }
+    }
+    var isPaperCut: Bool { design.material == .paperCut }
     var shell: NSColor { Self.color(design.shell) }
-    var surface: NSColor { Self.color(design.surface) }
-    var ink: NSColor { Self.color(design.ink) }
+    var surface: NSColor { Self.color(componentColors?.surface ?? design.surface) }
+    var ink: NSColor { Self.color(componentColors?.ink ?? design.ink) }
     var text: NSColor { Self.color(design.text) }
     var muted: NSColor { Self.color(design.muted) }
     var clockAccent: NSColor { Self.color(design.clockAccent) }

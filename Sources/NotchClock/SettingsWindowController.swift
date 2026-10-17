@@ -13,12 +13,18 @@ final class ThemeSampleView: NSView {
         let palette = ThemePalette(theme)
         palette.shell.setFill()
         NSBezierPath(roundedRect: bounds, xRadius: 12, yRadius: 12).fill()
-        palette.clockAccent.setFill()
-        NSBezierPath(roundedRect: NSRect(x: 16, y: 13, width: 98, height: 46), xRadius: 23, yRadius: 23).fill()
-        palette.surface.setFill()
-        NSBezierPath(roundedRect: NSRect(x: 20, y: 17, width: 78, height: 38), xRadius: 19, yRadius: 19).fill()
-        drawText("10:10", at: NSRect(x: 25, y: 25, width: 66, height: 22),
-                 font: .monospacedDigitSystemFont(ofSize: 18, weight: .medium), color: palette.ink)
+        if palette.isPaperCut {
+            let dial = drawThemeHousing(in: NSRect(x: 16, y: 13, width: 98, height: 46),
+                                        palette: palette, accent: palette.clockAccent, progress: 1, sharedFrame: true)
+            drawThemeNumber("10:10", in: dial.insetBy(dx: 6, dy: 8), family: .wavy, palette: palette)
+        } else {
+            palette.clockAccent.setFill()
+            NSBezierPath(roundedRect: NSRect(x: 16, y: 13, width: 98, height: 46), xRadius: 23, yRadius: 23).fill()
+            palette.surface.setFill()
+            NSBezierPath(roundedRect: NSRect(x: 20, y: 17, width: 78, height: 38), xRadius: 19, yRadius: 19).fill()
+            drawText("10:10", at: NSRect(x: 25, y: 25, width: 66, height: 22),
+                     font: .monospacedDigitSystemFont(ofSize: 18, weight: .medium), color: palette.ink)
+        }
         drawText(theme.name, at: NSRect(x: 134, y: 28, width: 250, height: 20),
                  font: .systemFont(ofSize: 15, weight: .medium), color: palette.text, alignment: .left)
         for (index, color) in [palette.surface, palette.clockAccent, palette.widgetAccent].enumerated() {

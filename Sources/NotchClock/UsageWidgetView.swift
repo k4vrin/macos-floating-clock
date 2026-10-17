@@ -30,7 +30,11 @@ final class UsageWidgetView: WidgetSurfaceView {
         let p = expansionProgress
         let details = max(0, (p - 0.7) / 0.3)
         let dial = drawThemeHousing(in: housingBody,
-                                    palette: palette, accent: accent, progress: p, mountOnLeft: true)
+                                    palette: palette, accent: accent, progress: p, mountOnLeft: true, sharedFrame: sharesPaperFrame)
+        if palette.isPaperCut {
+            drawPaperUsage(in: dial)
+            return
+        }
         drawText(provider.title.uppercased(),
                  at: NSRect(x: dial.minX, y: dial.minY + mix(0, 10, p), width: dial.width, height: mix(6, 13, p)),
                  font: .systemFont(ofSize: mix(4.5, 9, p), weight: .semibold), color: palette.ink)
@@ -70,4 +74,32 @@ final class UsageWidgetView: WidgetSurfaceView {
         drawText(status, at: NSRect(x: dial.minX, y: dial.maxY - 17, width: dial.width, height: 9),
                  font: .systemFont(ofSize: 5.5, weight: .medium), color: palette.ink.withAlphaComponent(details))
     }
+    private func drawPaperUsage(in dial: NSRect) {
+        let p = expansionProgress
+        let column = dial.width / 3
+        drawText(provider.title.uppercased(),
+                 at: NSRect(x: dial.minX + 2, y: dial.midY - mix(4, 10, p), width: column - 4, height: mix(9, 22, p)),
+                 font: .systemFont(ofSize: mix(5, 15, p), weight: .semibold), color: palette.ink)
+        let dot = mix(2, 6, p)
+        accent.setFill()
+        NSBezierPath(ovalIn: NSRect(x: dial.minX + column / 2 - dot / 2,
+                                    y: dial.midY + mix(6, 23, p), width: dot, height: dot)).fill()
+        for (index, window) in windowRows.enumerated() {
+            let x = dial.minX + CGFloat(index + 1) * column
+            palette.ink.withAlphaComponent(0.45).setFill()
+            NSRect(x: x, y: dial.midY - mix(8, 27, p), width: mix(0.3, 0.7, p), height: mix(16, 54, p)).fill()
+            let title = index == 0 ? "5H" : "WEEK"
+            drawText(title, at: NSRect(x: x + 3, y: dial.midY - mix(10, 29, p), width: column - 6, height: mix(6, 12, p)),
+                     font: .systemFont(ofSize: mix(4, 8, p), weight: .semibold), color: palette.ink)
+            let valid = window.map { !$0.isExpired(at: date) } ?? false
+            let value = valid ? window.map { "\(Int($0.usedPercent))%" } ?? "--" : "--"
+            drawText(value, at: NSRect(x: x + 3, y: dial.midY - mix(3, 9, p), width: column - 6, height: mix(12, 37, p)),
+                     font: .monospacedDigitSystemFont(ofSize: mix(9, 27, p), weight: .semibold), color: palette.ink)
+            let reset = valid ? window?.resetDescription(at: date).map { "Reset " + $0 } : nil
+            drawText(reset ?? (snapshots[provider] == nil ? "Not connected" : "Awaiting data"),
+                     at: NSRect(x: x + 3, y: dial.midY + 36, width: column - 6, height: 10),
+                     font: .systemFont(ofSize: 6), color: palette.ink.withAlphaComponent(max(0, (p - 0.8) / 0.2)))
+        }
+    }
+
 }

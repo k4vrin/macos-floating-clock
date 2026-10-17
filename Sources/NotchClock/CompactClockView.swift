@@ -17,36 +17,44 @@ final class CompactClockView: NotchItemView {
     override func draw(_ dirtyRect: NSRect) {
         guard let context = NSGraphicsContext.current?.cgContext else { return }
         let p = expansionProgress
-        let housing = bounds.insetBy(dx: mix(0.5, 6, p), dy: mix(0.5, 6, p))
+        let housing = palette.isPaperCut ? bounds : bounds.insetBy(dx: mix(0.5, 6, p), dy: mix(0.5, 6, p))
         guard housing.height > 4 else { return }
-        let mountWidth = housing.height * 0.65 * (1 - p)
-        let faceFrame = NSRect(x: housing.minX, y: housing.minY,
-                               width: housing.width - mountWidth, height: housing.height)
-        let mountingEnd = NSRect(x: faceFrame.maxX - faceFrame.height / 2, y: housing.minY,
-                                width: mountWidth + faceFrame.height / 2, height: housing.height)
-        NSGraphicsContext.saveGraphicsState()
-        NSBezierPath(roundedRect: housing, xRadius: housing.height / 2 * p,
-                     yRadius: housing.height / 2 * p).addClip()
-        accent.setFill()
-        NSBezierPath(roundedRect: faceFrame, xRadius: faceFrame.height / 2,
-                     yRadius: faceFrame.height / 2).fill()
-        mountingEnd.fill()
-        NSGraphicsContext.restoreGraphicsState()
+        let dial: NSRect
+        let dialPath: NSBezierPath
+        if palette.isPaperCut {
+            dial = drawPaperHousing(in: housing, palette: palette, progress: p, sharedFrame: sharesPaperFrame)
+            dialPath = NSBezierPath(roundedRect: dial, xRadius: dial.height / 2, yRadius: dial.height / 2)
+        } else {
+            let mountWidth = housing.height * 0.65 * (1 - p)
+            let faceFrame = NSRect(x: housing.minX, y: housing.minY,
+                                   width: housing.width - mountWidth, height: housing.height)
+            let mountingEnd = NSRect(x: faceFrame.maxX - faceFrame.height / 2, y: housing.minY,
+                                    width: mountWidth + faceFrame.height / 2, height: housing.height)
+            NSGraphicsContext.saveGraphicsState()
+            NSBezierPath(roundedRect: housing, xRadius: housing.height / 2 * p,
+                         yRadius: housing.height / 2 * p).addClip()
+            accent.setFill()
+            NSBezierPath(roundedRect: faceFrame, xRadius: faceFrame.height / 2,
+                         yRadius: faceFrame.height / 2).fill()
+            mountingEnd.fill()
+            NSGraphicsContext.restoreGraphicsState()
 
-        palette.ink.withAlphaComponent(0.38).setFill()
-        NSRect(x: faceFrame.maxX + mountWidth * 0.38, y: housing.minY,
-               width: 0.6 * (1 - p), height: housing.height).fill()
-        NSColor.white.withAlphaComponent(0.18).setFill()
-        NSRect(x: faceFrame.maxX + mountWidth * 0.38 + 0.6, y: housing.minY,
-               width: 0.5 * (1 - p), height: housing.height).fill()
+            palette.ink.withAlphaComponent(0.38).setFill()
+            NSRect(x: faceFrame.maxX + mountWidth * 0.38, y: housing.minY,
+                   width: 0.6 * (1 - p), height: housing.height).fill()
+            NSColor.white.withAlphaComponent(0.18).setFill()
+            NSRect(x: faceFrame.maxX + mountWidth * 0.38 + 0.6, y: housing.minY,
+                   width: 0.5 * (1 - p), height: housing.height).fill()
 
-        let bezel = faceFrame.insetBy(dx: mix(1.5, 8, p), dy: mix(1.5, 8, p))
-        palette.ink.setFill()
-        NSBezierPath(roundedRect: bezel, xRadius: bezel.height / 2, yRadius: bezel.height / 2).fill()
-        let dial = bezel.insetBy(dx: mix(0.7, 5, p), dy: mix(0.7, 5, p))
-        let dialPath = NSBezierPath(roundedRect: dial, xRadius: dial.height / 2, yRadius: dial.height / 2)
-        NSGradient(starting: palette.highlight,
-                   ending: palette.surface)?.draw(in: dialPath, angle: 90)
+            let bezel = faceFrame.insetBy(dx: mix(1.5, 8, p), dy: mix(1.5, 8, p))
+            palette.ink.setFill()
+            NSBezierPath(roundedRect: bezel, xRadius: bezel.height / 2, yRadius: bezel.height / 2).fill()
+            dial = bezel.insetBy(dx: mix(0.7, 5, p), dy: mix(0.7, 5, p))
+            dialPath = NSBezierPath(roundedRect: dial, xRadius: dial.height / 2, yRadius: dial.height / 2)
+            NSGradient(starting: palette.highlight,
+                       ending: palette.surface)?.draw(in: dialPath, angle: 90)
+
+        }
 
         context.saveGState()
         dialPath.addClip()
