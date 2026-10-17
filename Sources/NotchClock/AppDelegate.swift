@@ -325,6 +325,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let selected = packs.flatMap { pack in (pack.themes ?? []).map { (pack.id + "/" + $0.id, $0) } }
             .first { $0.0 == preferences.theme }?.1 ?? ThemeDesign.originals[0]
         content.applyTheme(selected)
+        applyFrame(animated: false)
     }
 
     @objc private func showSettings() {
@@ -440,7 +441,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func applyFrame(animated: Bool) {
         guard let geometry else { return }
-        let frame = mix(geometry.frame(expanded: false), geometry.frame(expanded: true), content.progress)
+        let frame = mix(geometry.frame(expanded: false), geometry.frame(expanded: true, expandedHeight: content.expandedHeight), content.progress)
         if panel.frame != frame { panel.setFrame(frame, display: true) }
         content.needsLayout = true
     }
@@ -449,7 +450,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard visible, !sleeping, panel.isVisible, let geometry else { return false }
         let point = position ?? NSEvent.mouseLocation
         if point.y > geometry.screenFrame.maxY - geometry.height && abs(point.x - geometry.center) < geometry.gap / 2 { return false }
-        return panel.frame.contains(point)
+        guard panel.frame.contains(point) else { return false }
+        return content.containsInteractionPoint(content.convert(panel.convertPoint(fromScreen: point), from: nil))
     }
 
     private func evaluateHover(at position: NSPoint? = nil) {

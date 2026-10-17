@@ -8,10 +8,10 @@ struct BarGeometry: Equatable {
 
     var compactWidth: CGFloat { gap + 224 }
 
-    func frame(expanded: Bool) -> NSRect {
+    func frame(expanded: Bool, expandedHeight: CGFloat? = nil) -> NSRect {
         let desiredWidth = expanded ? max(640, compactWidth) : compactWidth
         let width = min(desiredWidth, 2 * min(center - screenFrame.minX, screenFrame.maxX - center))
-        let totalHeight = height + (expanded ? 390 : 0)
+        let totalHeight = expanded ? expandedHeight ?? height + 390 : height
         return NSRect(x: center - width / 2, y: screenFrame.maxY - totalHeight,
                       width: width, height: totalHeight)
     }

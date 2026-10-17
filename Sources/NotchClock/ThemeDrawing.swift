@@ -12,8 +12,8 @@ func mix(_ start: NSRect, _ end: NSRect, _ progress: CGFloat) -> NSRect {
 /// A shared bezel and mounting seam keep all objects in a theme visually related.
 @MainActor
 func drawThemeHousing(in body: NSRect, palette: ThemePalette, accent: NSColor,
-                      progress: CGFloat, mountOnLeft: Bool = false) -> NSRect {
-    if palette.isPaperCut { return drawPaperHousing(in: body, palette: palette, progress: progress) }
+                      progress: CGFloat, mountOnLeft: Bool = false, sharedFrame: Bool = false) -> NSRect {
+    if palette.isPaperCut { return drawPaperHousing(in: body, palette: palette, progress: progress, sharedFrame: sharedFrame) }
     let mount = mix(body.height * 0.18, 12, progress)
     let face = NSRect(x: body.minX + (mountOnLeft ? mount : 0), y: body.minY,
                       width: max(1, body.width - mount), height: body.height)
@@ -79,51 +79,81 @@ private enum PaperGrain {
 }
 
 @MainActor
-func drawPaperHousing(in body: NSRect, palette: ThemePalette, progress: CGFloat) -> NSRect {
-    let radius = body.height / 2
-    let rim = ThemePalette.color("FFF1D4")
+func paperBody(in bounds: NSRect, progress: CGFloat) -> NSRect {
+    bounds.insetBy(dx: mix(0.5, 4, progress), dy: mix(0.5, 8, progress))
+}
+
+@MainActor
+func drawPaperFrame(in body: NSRect, progress: CGFloat) {
+    let radius = body.height * 0.28
     NSGraphicsContext.saveGraphicsState()
     let lift = NSShadow()
-    lift.shadowColor = ThemePalette.color("493321").withAlphaComponent(0.28 * progress)
-    lift.shadowBlurRadius = 7 * progress
-    lift.shadowOffset = NSSize(width: 0, height: -4 * progress)
+    lift.shadowColor = ThemePalette.color("493321").withAlphaComponent(0.25 * progress)
+    lift.shadowBlurRadius = 6 * progress
+    lift.shadowOffset = NSSize(width: 0, height: -3 * progress)
     lift.set()
-    rim.setFill()
+    ThemePalette.color("DCCAA6").setFill()
     NSBezierPath(roundedRect: body, xRadius: radius, yRadius: radius).fill()
     NSGraphicsContext.restoreGraphicsState()
-    let layer = body.insetBy(dx: mix(1, 3, progress), dy: mix(1, 3, progress))
-    ThemePalette.color("DCCAA6").setFill()
-    NSBezierPath(roundedRect: layer, xRadius: layer.height / 2, yRadius: layer.height / 2).fill()
-    let dial = body.insetBy(dx: mix(2.5, 9, progress), dy: mix(2.5, 9, progress))
-    let path = NSBezierPath(roundedRect: dial, xRadius: dial.height / 2, yRadius: dial.height / 2)
-    NSGradient(starting: palette.highlight, ending: palette.surface)?.draw(in: path, angle: 90)
+    let top = body.insetBy(dx: 1, dy: 1).offsetBy(dx: 0, dy: -min(1, progress))
+    ThemePalette.color("FFF0D3").setFill()
+    NSBezierPath(roundedRect: top, xRadius: radius, yRadius: radius).fill()
+    NSGraphicsContext.saveGraphicsState()
+    NSBezierPath(roundedRect: top, xRadius: radius, yRadius: radius).addClip()
+    NSColor(patternImage: PaperGrain.image).setFill()
+    top.fill()
+    NSGraphicsContext.restoreGraphicsState()
+}
+
+@MainActor
+func drawPaperHousing(in body: NSRect, palette: ThemePalette, progress: CGFloat, sharedFrame: Bool = false) -> NSRect {
+    if !sharedFrame { drawPaperFrame(in: body, progress: progress) }
+    let dial = body.insetBy(dx: mix(2.5, 6, progress), dy: mix(2.5, 6, progress))
+    let radius = dial.height * 0.25
+    let path = NSBezierPath(roundedRect: dial, xRadius: radius, yRadius: radius)
+    let highlight = palette.surface.blended(withFraction: 0.04, of: .white) ?? palette.surface
+    NSGradient(starting: highlight, ending: palette.surface)?.draw(in: path, angle: 90)
     NSGraphicsContext.saveGraphicsState()
     path.addClip()
     NSColor(patternImage: PaperGrain.image).setFill()
     dial.fill()
+    // A narrow inner edge suggests stacked paper without making a second floating frame.
+    palette.ink.withAlphaComponent(0.12).setStroke()
+    path.lineWidth = mix(0.5, 1.5, progress)
+    path.stroke()
     NSGraphicsContext.restoreGraphicsState()
-    rim.withAlphaComponent(0.65).setStroke()
-    let edge = NSBezierPath(roundedRect: body.insetBy(dx: 0.5, dy: 0.5), xRadius: radius, yRadius: radius)
-    edge.lineWidth = mix(0.5, 1, progress)
-    edge.stroke()
     return dial
 }
 
 @MainActor
 private func drawPaperNumber(_ text: String, in rect: NSRect, palette: ThemePalette) {
-    let base = NSFont.systemFont(ofSize: rect.height * 0.86, weight: .heavy)
-    let descriptor = base.fontDescriptor.withDesign(.rounded) ?? base.fontDescriptor
-    var font = NSFont(descriptor: descriptor, size: base.pointSize) ?? base
-    let width = (text as NSString).size(withAttributes: [.font: font]).width
-    if width > rect.width { font = NSFont(descriptor: descriptor, size: font.pointSize * rect.width / width) ?? font }
-    let height = font.ascender - font.descender
-    let frame = NSRect(x: rect.minX, y: rect.midY - height / 2, width: rect.width, height: height + 2)
-    NSGraphicsContext.saveGraphicsState()
-    let shadow = NSShadow()
-    shadow.shadowColor = ThemePalette.color("35251B").withAlphaComponent(0.35)
-    shadow.shadowBlurRadius = min(3, rect.height * 0.035)
-    shadow.shadowOffset = NSSize(width: 0, height: -min(2, rect.height * 0.025))
-    shadow.set()
-    drawText(text, at: frame, font: font, color: palette.ink)
-    NSGraphicsContext.restoreGraphicsState()
+    let characters = Array(text)
+    let weights = characters.map { $0 == ":" ? CGFloat(0.34) : $0 == "%" ? 0.9 : 0.86 }
+    let unit = rect.width / max(1, weights.reduce(0, +))
+    var x = rect.minX
+    for (index, character) in characters.enumerated() {
+        let width = unit * weights[index]
+        let base = NSFont.systemFont(ofSize: rect.height * 1.03, weight: .heavy)
+        let descriptor = base.fontDescriptor.withDesign(.rounded) ?? base.fontDescriptor
+        var font = NSFont(descriptor: descriptor, size: base.pointSize) ?? base
+        let measured = (String(character) as NSString).size(withAttributes: [.font: font]).width
+        if measured > width * 0.96 { font = NSFont(descriptor: descriptor, size: font.pointSize * width * 0.96 / measured) ?? font }
+        let height = font.ascender - font.descender
+        NSGraphicsContext.saveGraphicsState()
+        let context = NSGraphicsContext.current?.cgContext
+        let center = CGPoint(x: x + width / 2, y: rect.midY)
+        context?.translateBy(x: center.x, y: center.y)
+        // Fixed per-glyph offsets give the chunky paper numerals hand-cut asymmetry.
+        context?.rotate(by: [CGFloat(-0.035), 0.025, 0, -0.025, 0.035][index % 5])
+        context?.scaleBy(x: 1, y: [CGFloat(1), 0.94, 1, 0.98, 0.95][index % 5])
+        let shadow = NSShadow()
+        shadow.shadowColor = ThemePalette.color("35251B").withAlphaComponent(0.4)
+        shadow.shadowBlurRadius = min(3, rect.height * 0.035)
+        shadow.shadowOffset = NSSize(width: 0, height: -min(3, rect.height * 0.035))
+        shadow.set()
+        drawText(String(character), at: NSRect(x: -width / 2, y: -height / 2, width: width, height: height + 2),
+                 font: font, color: character == ":" ? palette.clockAccent : palette.ink)
+        NSGraphicsContext.restoreGraphicsState()
+        x += width
+    }
 }

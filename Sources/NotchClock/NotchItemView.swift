@@ -2,6 +2,7 @@ import AppKit
 
 @MainActor
 class NotchItemView: NSView {
+    var sharesPaperFrame = false { didSet { needsDisplay = true } }
     var expansionProgress: CGFloat = 0 { didSet { needsDisplay = true } }
     var visualFamily = VisualFamily.wavy { didSet { needsDisplay = true } }
     var palette = ThemePalette() { didSet { needsDisplay = true } }

@@ -17,12 +17,12 @@ final class CompactClockView: NotchItemView {
     override func draw(_ dirtyRect: NSRect) {
         guard let context = NSGraphicsContext.current?.cgContext else { return }
         let p = expansionProgress
-        let housing = bounds.insetBy(dx: mix(0.5, 6, p), dy: mix(0.5, 6, p))
+        let housing = palette.isPaperCut ? paperBody(in: bounds, progress: p) : bounds.insetBy(dx: mix(0.5, 6, p), dy: mix(0.5, 6, p))
         guard housing.height > 4 else { return }
         let dial: NSRect
         let dialPath: NSBezierPath
         if palette.isPaperCut {
-            dial = drawPaperHousing(in: housing, palette: palette, progress: p)
+            dial = drawPaperHousing(in: housing, palette: palette, progress: p, sharedFrame: sharesPaperFrame)
             dialPath = NSBezierPath(roundedRect: dial, xRadius: dial.height / 2, yRadius: dial.height / 2)
         } else {
             let mountWidth = housing.height * 0.65 * (1 - p)

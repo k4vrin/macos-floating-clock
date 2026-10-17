@@ -44,9 +44,9 @@ Usage desk designs can additionally select `provider: "codex"` or `provider: "cl
 
 ## Paper Cut
 
-Choose **Originals · Paper Cut** under **Settings → Theme plugin**. The theme uses layered cream paper rims, a terracotta clock, butter-yellow calendar, and deep-blue provider desk. Rounded, raised numerals replace the Wavy strokes for this material. Compact geometry and existing hover morphing stay intact.
+Choose **Originals · Paper Cut** under **Settings → Theme plugin**. The theme uses layered cream paper rims, a terracotta clock, butter-yellow calendar, and deep-blue provider desk. Chunky raised numerals use fixed glyph rotations and height variations, with yellow colon dots. Saturated matte faces and fine divider rules follow the Paper Cut concept.
 
-The native `paperCut` material renders paper grain from a single cached transparent tile, with shadows on expanded housings and numeral layers. No downloaded textures, dependencies, or animation timers are added. Analog clocks share the paper housing while retaining their hands and markers.
+The native `paperCut` material renders paper grain from a single cached transparent tile, with one shadow on the shared frame and shadows on numeral layers. No downloaded textures, dependencies, or animation timers are added. Analog clocks share the paper housing while retaining their hands and markers.
 
 Theme manifests may specify optional `material: "paperCut"`, `calendarColors: {"surface": "F1C34F", "ink": "164865"}`, and `usageColors: {"surface": "164865", "ink": "FFF1D4"}`. Component colors are validated as six-digit RGB values and fall back to the base palette when absent. Existing manifests retain their rendering. See [the installable Paper Cut example](../examples/paper-cut.clockpack.json).
 
@@ -57,3 +57,5 @@ Native previews use synthetic usage data:
 ![Paper Cut clock and calendar](previews/paper-cut-calendar-expanded.png)
 
 ![Paper Cut compact view](previews/paper-cut-compact.png)
+
+Paper Cut draws one continuous cream frame around the clock, notch bridge, and right-side insert. Individual inserts do not draw separate outer housings or floating shadows. One parent progress value drives the frame and both inserts, and one connected hover region controls expansion and collapse. The physical camera cutout remains excluded from hit testing. Expanded content starts below the measured menu-bar band; the window fits that band plus the 192-point paper body instead of retaining the older tall desk canvas. Transparent space outside the visible frame does not keep the app expanded. Theme changes immediately recalculate this window size.

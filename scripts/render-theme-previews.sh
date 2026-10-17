@@ -11,6 +11,7 @@ _ = NSApplication.shared
 let directory = URL(fileURLWithPath: CommandLine.arguments[1])
 try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 let theme = ThemeDesign.originals.first { $0.id == CommandLine.arguments[2] } ?? ThemeDesign.originals[0]
+let expandedHeight: CGFloat = theme.material == .paperCut ? 224 : 422
 let date = Calendar.current.date(from: DateComponents(year: 2026, month: 10, day: 17, hour: 10, minute: 10))!
 for family in VisualFamily.allCases {
  for widgetIndex in [0, 1, 2] {
@@ -30,7 +31,7 @@ for family in VisualFamily.allCases {
   host.update(date: date)
   for step in 0...4 {
    let p = CGFloat(step) / 4
-   host.frame = NSRect(x: 0, y: 0, width: mix(409, 640, p), height: mix(32, 422, p))
+   host.frame = NSRect(x: 0, y: 0, width: mix(409, 640, p), height: mix(32, expandedHeight, p))
    host.setProgress(p)
    host.layoutSubtreeIfNeeded()
    let bitmap = host.bitmapImageRepForCachingDisplay(in: host.bounds)!
@@ -44,7 +45,7 @@ for family in VisualFamily.allCases {
  override var isFlipped: Bool { true }
  override func draw(_ rect: NSRect) { ThemePalette().shell.setFill(); bounds.fill() }
 }
-let canvas = PreviewCanvas(frame: NSRect(x: 0, y: 0, width: 640, height: 422))
+let canvas = PreviewCanvas(frame: NSRect(x: 0, y: 0, width: 640, height: expandedHeight))
 let host = ClockContentView(frame: .zero)
 host.barHeight = 32; host.notchGap = 185
 host.select(ClockPack.builtIn.clocks[1])
@@ -57,7 +58,7 @@ for index in 0..<80 {
  motion.advance(by: 1 / 20)
  let p = motion.value
  let width = mix(409, 640, p)
- host.frame = NSRect(x: (640 - width) / 2, y: 0, width: width, height: mix(32, 422, p))
+ host.frame = NSRect(x: (640 - width) / 2, y: 0, width: width, height: mix(32, expandedHeight, p))
  host.setProgress(p)
  canvas.layoutSubtreeIfNeeded()
  let bitmap = canvas.bitmapImageRepForCachingDisplay(in: canvas.bounds)!
