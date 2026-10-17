@@ -127,8 +127,8 @@ final class ClockContentView: NSView {
         let scale = min(1, bounds.width / 640)
         clock.frame = mix(left, NSRect(x: 32 * scale, y: barHeight + 42,
                                       width: 292 * scale, height: 292), progress)
-        widget.frame = mix(right, NSRect(x: 355 * scale, y: barHeight + 55,
-                                        width: 250 * scale, height: 266), progress)
+        widget.frame = mix(right, NSRect(x: 326 * scale, y: barHeight + 42,
+                                        width: 282 * scale, height: 292), progress)
     }
     override func draw(_ dirtyRect: NSRect) {
         let radius = min(mix(barHeight / 2, 26, progress), bounds.height / 2)

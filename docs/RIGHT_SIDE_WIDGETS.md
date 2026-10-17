@@ -105,7 +105,7 @@ The widget-only Desk Widgets example was also installed through the native file 
 
 ## Provider-specific desks
 
-Choose **Codex Desk** or **Claude Desk** from **Settings → Right side** or the **Right-side Widgets** menu. A desk shows only its selected provider. Both compact and expanded layouts have separate 5H and WEEK slots; the expanded percentages are the dominant text, with smaller window labels, reset times, and connection/freshness details. Existing hover morphing and theme recipes apply to both desks.
+Choose **Codex Desk** or **Claude Desk** from **Settings → Right side** or the **Right-side Widgets** menu. A desk shows only its selected provider. Both compact and expanded layouts have side-by-side 5H and WEEK slots; the expanded percentages are the dominant text, with smaller window labels, reset times, and connection/freshness details. Existing hover morphing and theme recipes apply to both desks.
 
 The two slots match 300-minute and 10,080-minute windows exactly. Missing and expired windows show `--` rather than substituting another window or provider. The accessibility description and tooltip identify the selected provider, unavailable slots, stale data, and reset times.
 
@@ -118,3 +118,5 @@ Provider desk previews below use synthetic sample data.
 ![Codex desk with five-hour and weekly limits](previews/wavy-usage-expanded.png)
 
 ![Claude desk with five-hour and weekly limits](previews/claude-usage-expanded.png)
+
+The expanded calendar and provider desks use horizontal capsules aligned to the digital clock housing. The excess vertical housing is removed; the calendar date stays centered, and usage percentages share one row with smaller reset details underneath. Both widgets retain the same compact geometry and hover morph.
